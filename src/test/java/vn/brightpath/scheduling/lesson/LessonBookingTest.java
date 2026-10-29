@@ -61,6 +61,17 @@ class LessonBookingTest {
     }
 
     @Test
+    void seedCancellationsGetTheFourHourRuleAndAHistoryEntry() {
+        // L005 cancelled 08:15 for 14:00 (5h45 notice) -> free; L017 cancelled 14:40 for 16:00 -> charged.
+        // Both were cancelled on the day itself, i.e. after the previous day's 16:00 lock.
+        assertThat(jdbc.queryForList("""
+                SELECT l.external_ref || ' late=' || l.late_cancel || ' afterLock=' || c.after_lock
+                FROM lesson l JOIN lesson_change c ON c.lesson_id = l.id ORDER BY 1
+                """, String.class))
+                .containsExactly("L005 late=false afterLock=true", "L017 late=true afterLock=true");
+    }
+
+    @Test
     void studentCannotBeInTwoPlacesAtOnce() {
         // Le Minh Chau already has L019: Fri 09:00-10:00 with T2 in R2
         assertThatThrownBy(() -> service.book(request(LE_MINH_CHAU, "T3", "R4", "2026-03-06T09:30", 60, null)))

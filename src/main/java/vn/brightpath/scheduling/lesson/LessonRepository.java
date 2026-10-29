@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class LessonRepository {
 
-    /** A lesson holds its slot unless cancelled. Legacy conflicts never hold a slot. */
-    private static final String HOLDS_SLOT = "status <> 'cancelled' AND NOT legacy_conflict";
+    /** Must match the WHERE clause of the exclusion constraints (V2__lesson_changes.sql). */
+    private static final String HOLDS_SLOT = "status IN ('booked', 'no_show') AND NOT legacy_conflict";
 
     private final JdbcTemplate jdbc;
 
@@ -61,6 +61,15 @@ public class LessonRepository {
                 rs.getTimestamp("starts_at").toInstant().atZone(CenterRules.CENTER_ZONE).toOffsetDateTime(),
                 rs.getTimestamp("ends_at").toInstant().atZone(CenterRules.CENTER_ZONE).toOffsetDateTime(),
                 rs.getString("status"), rs.getString("override_reason")), id);
+    }
+
+    /** Appends to the lesson's history; after_lock is derived from the lesson's start time. */
+    public void recordChange(long lessonId, String change, Instant lessonStart, Instant changedAt, String reason) {
+        jdbc.update("""
+                INSERT INTO lesson_change (lesson_id, change, changed_at, after_lock, reason)
+                VALUES (?, ?, ?, ?, ?)
+                """, lessonId, change, Timestamp.from(changedAt),
+                CenterRules.isAfterLock(lessonStart, changedAt), reason);
     }
 
     public long countAll() {

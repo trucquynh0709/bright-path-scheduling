@@ -88,8 +88,8 @@ public class SeedImporter implements ApplicationRunner {
 
             List<String> issues = new ArrayList<>();
             boolean legacyConflict = false;
-            // A cancelled lesson holds no slot, so only active lessons are checked.
-            if (!"cancelled".equals(status)) {
+            // A cancelled lesson holds no slot, so only slot-holding lessons are checked.
+            if ("booked".equals(status) || "no_show".equals(status)) {
                 if (day.getDayOfWeek() == CenterRules.CLOSED_DAY) {
                     issues.add(CenterRules.RULE_CLOSED_ON_MONDAY + ": lesson on " + day);
                 }
@@ -103,14 +103,21 @@ public class SeedImporter implements ApplicationRunner {
                 }
             }
 
-            jdbc.update("""
+            Instant cancelled = cancelledAt.isEmpty() ? null : OffsetDateTime.parse(cancelledAt).toInstant();
+            String note = row.get("note").isEmpty() ? null : row.get("note");
+            long lessonId = jdbc.queryForObject("""
                     INSERT INTO lesson (external_ref, student_id, tutor_id, room_id, starts_at, ends_at,
-                                        status, cancelled_at, note, legacy_conflict)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
+                                        status, cancelled_at, late_cancel, note, legacy_conflict)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id
+                    """, Long.class,
                     ref, studentId, tutorId, roomId, Timestamp.from(start), Timestamp.from(end), status,
-                    cancelledAt.isEmpty() ? null : Timestamp.from(OffsetDateTime.parse(cancelledAt).toInstant()),
-                    row.get("note").isEmpty() ? null : row.get("note"), legacyConflict);
+                    cancelled == null ? null : Timestamp.from(cancelled),
+                    cancelled == null ? null : CenterRules.isLateCancel(start, cancelled),
+                    note, legacyConflict);
+            // The export only timestamps cancellations, so those are the only history we can rebuild.
+            if (cancelled != null) {
+                lessons.recordChange(lessonId, "cancelled", start, cancelled, note);
+            }
             imported++;
 
             for (String issue : issues) {
