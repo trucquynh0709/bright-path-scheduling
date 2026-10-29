@@ -52,11 +52,14 @@ Tests run: 29, Failures: 0, Errors: 0, Skipped: 0
 
 ## UI
 Open **http://localhost:8081/**. It is a single page with Vietnamese labels, for Mai, the owner and tutors.
-- **Hôm nay** (home): the whole centre's day as rooms R1–R6 × hours. The hour height adapts so a full day fits a laptop screen without scrolling.
+- **Hôm nay** (home, for the owner and Mai): an operations view of the whole centre, not a calendar. It fits one laptop screen.
+  - **Day counts:** lessons, tutors teaching, cancelled or moved, changes after the 16:00 cut-off.
+  - **Bây giờ:** who is in each room right now, or when the room is next used.
+  - **Cần báo lại gia sư:** every lesson changed after the cut-off, with the tutor's phone number to call.
+  - **Cả ngày theo gia sư:** one horizontal track per tutor, with a red "now" line. A tutor above 6 lessons (only possible in imported history) is flagged.
+- **Lịch gia sư** (for a tutor): one tutor's week as a calendar. `?tutor=T1&date=2026-03-05` opens it directly. That is the link to send a tutor instead of a chain of messages.
   - The colour bar on each block shows its status: green booked, grey cancelled or moved, amber no-show.
-  - An amber dot marks a change after the 16:00 lock.
-  - A red line marks the simulated now.
-- **Lịch gia sư**: one tutor's week. `?tutor=T1&date=2026-03-05` opens it directly. That is the link to send a tutor instead of a chain of messages.
+  - An amber dot marks a change after the cut-off.
 - **Click any block** for its details and change history.
   - An upcoming lesson can be moved or cancelled.
   - A started lesson can only be marked as a no-show.
