@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.postgresql.util.PSQLException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -32,6 +33,42 @@ public class LessonService {
 
     @Transactional
     public LessonView book(BookLessonRequest req) {
+        return insertLesson(req, null);
+    }
+
+    /**
+     * Cancels a booked lesson. The row stays (status 'cancelled') so the tutor can see it was
+     * cancelled; the 4h rule is decided now and stored. Either way the slot is released.
+     */
+    @Transactional
+    public LessonView cancel(long lessonId, String reason) {
+        Instant start = lockBookedLesson(lessonId);
+        Instant now = clock.instant();
+        if (!now.isBefore(start)) {
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, "lesson_already_started",
+                    "Lesson " + lessonId + " has already started; record a no-show instead");
+        }
+        jdbc.update("UPDATE lesson SET status = 'cancelled', cancelled_at = ?, late_cancel = ? WHERE id = ?",
+                Timestamp.from(now), CenterRules.isLateCancel(start, now), lessonId);
+        lessons.recordChange(lessonId, "cancelled", start, now, reason);
+        return lessons.findById(lessonId);
+    }
+
+    /** The student did not come: the lesson keeps its slot and is charged; nothing is released. */
+    @Transactional
+    public LessonView markNoShow(long lessonId) {
+        Instant start = lockBookedLesson(lessonId);
+        Instant now = clock.instant();
+        if (now.isBefore(start)) {
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, "lesson_not_started",
+                    "Lesson " + lessonId + " has not started yet; cancel it instead");
+        }
+        jdbc.update("UPDATE lesson SET status = 'no_show' WHERE id = ?", lessonId);
+        lessons.recordChange(lessonId, "no_show", start, now, null);
+        return lessons.findById(lessonId);
+    }
+
+    private LessonView insertLesson(BookLessonRequest req, Long replacesLessonId) {
         if (!CenterRules.ALLOWED_DURATIONS_MIN.contains(req.durationMin())) {
             throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, "lesson_duration_60_or_90",
                     "A lesson is 60 or 90 minutes, got " + req.durationMin());
@@ -64,11 +101,14 @@ public class LessonService {
 
         try {
             long id = jdbc.queryForObject("""
-                    INSERT INTO lesson (student_id, tutor_id, room_id, starts_at, ends_at, override_reason)
-                    VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+                    INSERT INTO lesson (student_id, tutor_id, room_id, starts_at, ends_at, override_reason,
+                                        replaces_lesson_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
                     """, Long.class,
                     req.studentId(), req.tutorId(), req.roomId(), Timestamp.from(start), Timestamp.from(end),
-                    softRuleBreaks.isEmpty() ? null : req.overrideReason());
+                    softRuleBreaks.isEmpty() ? null : req.overrideReason(), replacesLessonId);
+            // A booking made after the 16:00 lock is itself a change the tutor must be shown.
+            lessons.recordChange(id, "booked", start, clock.instant(), req.overrideReason());
             return lessons.findById(id);
         } catch (DataIntegrityViolationException e) {
             // Another booking for the same student or room committed between our check and insert.
@@ -91,6 +131,21 @@ public class LessonService {
             breaks.add(CenterRules.RULE_MAX_PER_DAY);
         }
         return breaks;
+    }
+
+    /** Locks the lesson row (so two cancels cannot race) and returns its start; it must still be booked. */
+    private Instant lockBookedLesson(long lessonId) {
+        List<Map<String, Object>> rows = jdbc.queryForList(
+                "SELECT status, starts_at FROM lesson WHERE id = ? FOR UPDATE", lessonId);
+        if (rows.isEmpty()) {
+            throw notFound("lesson", lessonId);
+        }
+        String status = (String) rows.get(0).get("status");
+        if (!"booked".equals(status)) {
+            throw new RuleViolationException(HttpStatus.CONFLICT, "lesson_not_booked",
+                    "Lesson " + lessonId + " is already " + status);
+        }
+        return ((Timestamp) rows.get(0).get("starts_at")).toInstant();
     }
 
     private void lockTutor(String tutorId) {

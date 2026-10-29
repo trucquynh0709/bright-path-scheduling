@@ -12,5 +12,7 @@ public record LessonView(
         OffsetDateTime startsAt,
         OffsetDateTime endsAt,
         String status,
+        Boolean lateCancel,
+        Long replacesLessonId,
         String overrideReason) {
 }
