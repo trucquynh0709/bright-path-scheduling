@@ -36,7 +36,7 @@ class LessonRescheduleTest {
     }
 
     private static RescheduleLessonRequest moveTo(String startsAt, String roomId, String reason) {
-        return new RescheduleLessonRequest(LocalDateTime.parse(startsAt), null, null, roomId, reason, null);
+        return new RescheduleLessonRequest(LocalDateTime.parse(startsAt), null, null, roomId, reason);
     }
 
     @Test

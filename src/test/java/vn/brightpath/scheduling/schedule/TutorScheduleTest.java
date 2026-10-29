@@ -65,7 +65,7 @@ class TutorScheduleTest {
     void movedLessonShowsWhereItWent() {
         long original = idOf("L028");
         LessonView moved = service.reschedule(original, new RescheduleLessonRequest(
-                LocalDateTime.parse("2026-03-07T13:00"), null, null, null, "exam moved", null));
+                LocalDateTime.parse("2026-03-07T13:00"), null, null, null, "exam moved"));
 
         TutorSchedule day = query.forDay("T3", LocalDate.parse("2026-03-07"));
         TutorSchedule.Entry old = day.lessons().stream().filter(l -> l.lessonId() == original).findFirst().orElseThrow();

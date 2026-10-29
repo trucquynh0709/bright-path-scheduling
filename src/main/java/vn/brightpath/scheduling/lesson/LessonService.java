@@ -5,7 +5,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +33,7 @@ public class LessonService {
 
     @Transactional
     public LessonView book(BookLessonRequest req) {
-        return insertLesson(req, null, req.overrideReason());
+        return insertLesson(req, null, null);
     }
 
     /**
@@ -62,8 +61,7 @@ public class LessonService {
                 req.tutorId() != null ? req.tutorId() : old.tutorId(),
                 req.roomId() != null ? req.roomId() : old.roomId(),
                 req.startsAt(),
-                req.durationMin() != null ? req.durationMin() : oldDuration,
-                req.overrideReason());
+                req.durationMin() != null ? req.durationMin() : oldDuration);
         String why = "moved from lesson " + lessonId + (req.reason() == null ? "" : ": " + req.reason());
         return insertLesson(moved, lessonId, why);
     }
@@ -111,6 +109,11 @@ public class LessonService {
             throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, "booking_in_the_past",
                     "Cannot book a lesson that starts before now (" + clock.instant().atZone(CenterRules.CENTER_ZONE) + ")");
         }
+        LocalDate day = req.startsAt().toLocalDate();
+        if (day.getDayOfWeek() == CenterRules.CLOSED_DAY) {
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, CenterRules.RULE_CLOSED_ON_MONDAY,
+                    "The centre is closed on Monday, when the rooms are cleaned");
+        }
 
         // Locking the tutor row serialises bookings per tutor, so two receptionists booking the
         // same tutor at once cannot both see "5 lessons today" and push the tutor to 7.
@@ -118,12 +121,11 @@ public class LessonService {
         requireExists("room", req.roomId());
         requireExists("student", req.studentId());
 
-        List<String> softRuleBreaks = softRuleBreaks(req.tutorId(), req.startsAt().toLocalDate());
-        boolean hasReason = req.overrideReason() != null && !req.overrideReason().isBlank();
-        if (!softRuleBreaks.isEmpty() && !hasReason) {
-            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, softRuleBreaks.get(0),
-                    "Breaks center rules " + softRuleBreaks + "; resend with overrideReason to book anyway",
-                    softRuleBreaks);
+        // The owner wants the 6-per-day limit enforced, so there is no override (see DECISIONS.md).
+        int sameDay = lessons.countTutorLessonsOn(req.tutorId(), day);
+        if (sameDay >= CenterRules.MAX_LESSONS_PER_TUTOR_PER_DAY) {
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, CenterRules.RULE_MAX_PER_DAY,
+                    "Tutor " + req.tutorId() + " already has " + sameDay + " lessons on " + day);
         }
 
         List<Conflict> conflicts = lessons.findConflicts(req.studentId(), req.tutorId(), req.roomId(), start, end);
@@ -133,12 +135,11 @@ public class LessonService {
 
         try {
             long id = jdbc.queryForObject("""
-                    INSERT INTO lesson (student_id, tutor_id, room_id, starts_at, ends_at, override_reason,
-                                        replaces_lesson_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+                    INSERT INTO lesson (student_id, tutor_id, room_id, starts_at, ends_at, replaces_lesson_id)
+                    VALUES (?, ?, ?, ?, ?, ?) RETURNING id
                     """, Long.class,
                     req.studentId(), req.tutorId(), req.roomId(), Timestamp.from(start), Timestamp.from(end),
-                    softRuleBreaks.isEmpty() ? null : req.overrideReason(), replacesLessonId);
+                    replacesLessonId);
             // A booking made after the 16:00 lock is itself a change the tutor must be shown.
             lessons.recordChange(id, "booked", start, clock.instant(), changeReason);
             return lessons.findById(id);
@@ -152,17 +153,6 @@ public class LessonService {
             }
             throw clash(constraint, List.of());
         }
-    }
-
-    private List<String> softRuleBreaks(String tutorId, LocalDate day) {
-        List<String> breaks = new ArrayList<>();
-        if (day.getDayOfWeek() == CenterRules.CLOSED_DAY) {
-            breaks.add(CenterRules.RULE_CLOSED_ON_MONDAY);
-        }
-        if (lessons.countTutorLessonsOn(tutorId, day) >= CenterRules.MAX_LESSONS_PER_TUTOR_PER_DAY) {
-            breaks.add(CenterRules.RULE_MAX_PER_DAY);
-        }
-        return breaks;
     }
 
     /** Locks the lesson row (so two cancels cannot race) and returns its start; it must still be booked. */

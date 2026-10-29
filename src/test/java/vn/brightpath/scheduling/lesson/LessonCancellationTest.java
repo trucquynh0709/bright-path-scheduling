@@ -58,7 +58,7 @@ class LessonCancellationTest {
 
         // The room and tutor are released: another student can take the slot
         LessonView replacement = service.book(new BookLessonRequest(
-                4L, "T1", "R1", LocalDateTime.parse("2026-03-05T14:30"), 60, null));
+                4L, "T1", "R1", LocalDateTime.parse("2026-03-05T14:30"), 60));
         assertThat(replacement.status()).isEqualTo("booked");
     }
 

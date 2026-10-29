@@ -40,9 +40,8 @@ class LessonBookingTest {
     @Autowired
     JdbcTemplate jdbc;
 
-    private static BookLessonRequest request(long studentId, String tutor, String room, String startsAt,
-                                             int minutes, String reason) {
-        return new BookLessonRequest(studentId, tutor, room, LocalDateTime.parse(startsAt), minutes, reason);
+    private static BookLessonRequest request(long studentId, String tutor, String room, String startsAt, int minutes) {
+        return new BookLessonRequest(studentId, tutor, room, LocalDateTime.parse(startsAt), minutes);
     }
 
     @Test
@@ -74,7 +73,7 @@ class LessonBookingTest {
     @Test
     void studentCannotBeInTwoPlacesAtOnce() {
         // Le Minh Chau already has L019: Fri 09:00-10:00 with T2 in R2
-        assertThatThrownBy(() -> service.book(request(LE_MINH_CHAU, "T3", "R4", "2026-03-06T09:30", 60, null)))
+        assertThatThrownBy(() -> service.book(request(LE_MINH_CHAU, "T3", "R4", "2026-03-06T09:30", 60)))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.status()).isEqualTo(HttpStatus.CONFLICT);
                     assertThat(e.rule()).isEqualTo("no_student_double_booking");
@@ -83,10 +82,9 @@ class LessonBookingTest {
     }
 
     @Test
-    void examPairInSameRoomIsRejectedEvenWithAReason() {
-        // L018 is T1 in R1 on Fri 09:00
-        assertThatThrownBy(() -> service.book(
-                request(BUI_AN_NHIEN, "T1", "R1", "2026-03-06T09:00", 60, "exam pair - half price")))
+    void examPairInSameRoomIsRejected() {
+        // L030 is T1 in R1 on Sat 15:00; a second student in the same slot is the "exam pair"
+        assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T1", "R1", "2026-03-07T15:00", 60)))
                 .isInstanceOfSatisfying(RuleViolationException.class,
                         e -> assertThat(e.status()).isEqualTo(HttpStatus.CONFLICT));
     }
@@ -94,27 +92,36 @@ class LessonBookingTest {
     @Test
     void backToBackLessonsAreAllowed() {
         // L019 ends at 10:00; starting exactly at 10:00 is not an overlap
-        LessonView lesson = service.book(request(LE_MINH_CHAU, "T2", "R2", "2026-03-06T10:00", 60, null));
+        LessonView lesson = service.book(request(LE_MINH_CHAU, "T2", "R2", "2026-03-06T10:00", 60));
         assertThat(lesson.status()).isEqualTo("booked");
     }
 
     @Test
-    void seventhLessonForATutorNeedsAReason() {
-        // T1 already has 7 lessons on Fri 2026-03-06 in the export
-        BookLessonRequest withoutReason = request(DO_VAN_KIEN, "T1", "R5", "2026-03-06T07:00", 60, null);
-        assertThatThrownBy(() -> service.book(withoutReason))
+    void seventhLessonForATutorIsRejected() {
+        // T1 already has 7 lessons on Fri 2026-03-06 in the export; the owner wants the limit enforced
+        assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T1", "R5", "2026-03-06T07:00", 60)))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.status()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
                     assertThat(e.rule()).isEqualTo(CenterRules.RULE_MAX_PER_DAY);
                 });
+    }
 
-        LessonView booked = service.book(request(DO_VAN_KIEN, "T1", "R5", "2026-03-06T07:00", 60, "covering sick colleague"));
-        assertThat(booked.overrideReason()).isEqualTo("covering sick colleague");
+    @Test
+    void tutorUnderTheLimitCanStillBeBooked() {
+        // T3 has one lesson (L020) on Fri 03-06
+        assertThat(service.book(request(DO_VAN_KIEN, "T3", "R5", "2026-03-06T18:00", 60)).status()).isEqualTo("booked");
+    }
+
+    @Test
+    void mondayIsRejected() {
+        assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T2", "R4", "2026-03-09T09:00", 60)))
+                .isInstanceOfSatisfying(RuleViolationException.class,
+                        e -> assertThat(e.rule()).isEqualTo(CenterRules.RULE_CLOSED_ON_MONDAY));
     }
 
     @Test
     void cannotBookBeforeSimulatedNow() {
-        assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T2", "R4", "2026-03-05T13:00", 60, null)))
+        assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T2", "R4", "2026-03-05T13:00", 60)))
                 .isInstanceOfSatisfying(RuleViolationException.class,
                         e -> assertThat(e.rule()).isEqualTo("booking_in_the_past"));
     }
