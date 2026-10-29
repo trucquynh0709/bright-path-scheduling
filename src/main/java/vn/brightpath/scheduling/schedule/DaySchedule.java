@@ -5,8 +5,10 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
- * One tutor's day as the single source of truth, replacing the WhatsApp message chain.
+ * A day's schedule as the single source of truth, replacing the WhatsApp message chain: either one
+ * tutor's day (what the tutor checks) or the whole centre's (what the owner and Mai check).
  *
+ * @param tutorId          the tutor this day belongs to, or null for the whole centre
  * @param lockedAt         16:00 the day before; changes from then on are flagged afterLock
  * @param locked           whether the lock moment has passed (simulated now)
  * @param revision         number of changes recorded for this day; quote it in any message
@@ -32,6 +34,8 @@ public record DaySchedule(
             long lessonId,
             String externalRef,
             String studentName,
+            String tutorId,
+            String tutorName,
             String roomId,
             OffsetDateTime startsAt,
             OffsetDateTime endsAt,

@@ -41,7 +41,7 @@ class DayScheduleTest {
         long l016 = idOf("L016");
         service.cancel(l016, "family cancelled");
 
-        DaySchedule day = query.forDay("T1", LocalDate.parse("2026-03-05"));
+        DaySchedule day = query.forTutor("T1", LocalDate.parse("2026-03-05"));
         assertThat(day.locked()).isTrue();
         assertThat(day.revision()).isEqualTo(1);
         assertThat(day.changedAfterLock()).containsExactly(l016);
@@ -55,7 +55,7 @@ class DayScheduleTest {
     void changesBeforeTheLockAreHistoryNotAlerts() {
         // Fri 03-06 locks at Thu 16:00, two hours after "now"
         service.cancel(idOf("L018"), "family cancelled");
-        DaySchedule day = query.forDay("T1", LocalDate.parse("2026-03-06"));
+        DaySchedule day = query.forTutor("T1", LocalDate.parse("2026-03-06"));
         assertThat(day.locked()).isFalse();
         assertThat(day.revision()).isEqualTo(1);
         assertThat(day.changedAfterLock()).isEmpty();
@@ -67,7 +67,7 @@ class DayScheduleTest {
         LessonView moved = service.reschedule(original, new RescheduleLessonRequest(
                 LocalDateTime.parse("2026-03-07T13:00"), null, null, null, "exam moved"));
 
-        DaySchedule day = query.forDay("T3", LocalDate.parse("2026-03-07"));
+        DaySchedule day = query.forTutor("T3", LocalDate.parse("2026-03-07"));
         DaySchedule.Entry old = day.lessons().stream().filter(l -> l.lessonId() == original).findFirst().orElseThrow();
         assertThat(old.status()).isEqualTo("rescheduled");
         assertThat(old.replacedByLessonId()).isEqualTo(moved.id());
@@ -76,9 +76,34 @@ class DayScheduleTest {
     }
 
     @Test
+    void centreDayShowsEveryTutorAndRoom() {
+        // Fri 03-06 in the export: T1 x7, T2 x2 (L019, L023), T3 x1 (L020)
+        DaySchedule day = query.forCentre(LocalDate.parse("2026-03-06"));
+        assertThat(day.tutorId()).isNull();
+        assertThat(day.lessons()).hasSize(10);
+        assertThat(day.lessons()).extracting(DaySchedule.Entry::tutorId).containsOnly("T1", "T2", "T3");
+        assertThat(day.lessons()).filteredOn(l -> "L019".equals(l.externalRef()))
+                .singleElement().satisfies(l -> {
+                    assertThat(l.tutorName()).isEqualTo("Pham Duc");
+                    assertThat(l.roomId()).isEqualTo("R2");
+                });
+    }
+
+    @Test
+    void centreDayCollectsChangesAfterLockAcrossTutors() {
+        // Thu 03-05 is locked. L017 (T3) was cancelled after the lock in the export; now cancel L016 (T1) too.
+        long l016 = idOf("L016");
+        service.cancel(l016, "family cancelled");
+        DaySchedule day = query.forCentre(LocalDate.parse("2026-03-05"));
+        assertThat(day.locked()).isTrue();
+        assertThat(day.changedAfterLock()).containsExactlyInAnyOrder(l016, idOf("L017"));
+        assertThat(day.revision()).isEqualTo(2);
+    }
+
+    @Test
     void importedSeedCancellationIsShownWithItsHistory() {
         // L017 (T3, Thu 16:00) was cancelled at 14:40 the same day in the spreadsheet: charged, after lock
-        DaySchedule day = query.forDay("T3", LocalDate.parse("2026-03-05"));
+        DaySchedule day = query.forTutor("T3", LocalDate.parse("2026-03-05"));
         DaySchedule.Entry l017 = day.lessons().stream()
                 .filter(l -> "L017".equals(l.externalRef())).findFirst().orElseThrow();
         assertThat(l017.lateCancel()).isTrue();
