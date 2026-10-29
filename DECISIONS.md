@@ -176,3 +176,5 @@ Every rule decision above (hard vs. soft rules, blocking exam pairs, new row on 
 
 ### Time
 Commit timestamps: **16:30–17:51** (setup, schema, import, booking, tests), then a break, then **20:50–21:41** (history, cancel, reschedule, schedule), plus about 20 minutes for these documents. That is roughly **2h30 of work**, at the limit. Two Docker Desktop crashes cost about 10 minutes of it.
+
+**After the timebox:** I added a small UI (`/`, plus a read-only `GET /reference` for its dropdowns) so the flow is easier to see in a demo. It is outside the 2.5h and is in its own commits (`9adf4b4`, `2375217`), so it can be judged, or ignored, separately. It does not change the feature choice in §2. It is a thin view over the same API, with no new rules.

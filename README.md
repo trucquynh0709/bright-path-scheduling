@@ -49,6 +49,14 @@ The tests start their own throwaway Postgres (Testcontainers), import the real s
 Tests run: 24, Failures: 0, Errors: 0, Skipped: 0
 ```
 
+## UI
+Open **http://localhost:8081/**: a single page for Mai and tutors (Vietnamese labels).
+- Pick a tutor and a day to see every lesson. Cancelled and moved lessons stay visible. Lessons changed after the 16:00 lock are highlighted, and the revision number is shown.
+- Cancel, reschedule or mark a no-show from each lesson. Book from the form on the right. If a soft rule (Monday, more than 6 per day) blocks a booking, a reason field appears.
+- `http://localhost:8081/?tutor=T1&date=2026-03-05` opens one tutor's day directly. That is the link to send a tutor instead of a chain of messages.
+
+It is plain HTML and JS in `src/main/resources/static/index.html`, with no build step. It was built after the 2.5h timebox (see DECISIONS.md).
+
 ## Try it
 Lesson ids match the spreadsheet: lesson `16` is `L016`. Student ids follow the order of first appearance in `data/seed.csv` (1 = Le Minh Chau ... 6 = Bui An Nhien). All output below is real, from running these commands in order on a fresh seed with now = Thu 2026-03-05 14:00.
 
