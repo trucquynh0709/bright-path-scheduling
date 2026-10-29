@@ -15,7 +15,7 @@ import java.util.List;
  *                         the schedule the tutor received at 16:00 is still exactly right
  * @param lessons          every lesson of the day, including cancelled and moved ones
  */
-public record TutorSchedule(
+public record DaySchedule(
         String tutorId,
         LocalDate date,
         OffsetDateTime lockedAt,

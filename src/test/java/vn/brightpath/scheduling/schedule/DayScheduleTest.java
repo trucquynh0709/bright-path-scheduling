@@ -22,10 +22,10 @@ import vn.brightpath.scheduling.lesson.RescheduleLessonRequest;
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 @Transactional
-class TutorScheduleTest {
+class DayScheduleTest {
 
     @Autowired
-    TutorScheduleQuery query;
+    DayScheduleQuery query;
     @Autowired
     LessonService service;
     @Autowired
@@ -41,11 +41,11 @@ class TutorScheduleTest {
         long l016 = idOf("L016");
         service.cancel(l016, "family cancelled");
 
-        TutorSchedule day = query.forDay("T1", LocalDate.parse("2026-03-05"));
+        DaySchedule day = query.forDay("T1", LocalDate.parse("2026-03-05"));
         assertThat(day.locked()).isTrue();
         assertThat(day.revision()).isEqualTo(1);
         assertThat(day.changedAfterLock()).containsExactly(l016);
-        assertThat(day.lessons()).extracting(TutorSchedule.Entry::externalRef, TutorSchedule.Entry::status)
+        assertThat(day.lessons()).extracting(DaySchedule.Entry::externalRef, DaySchedule.Entry::status)
                 .containsExactly(
                         tuple("L013", "booked"),
                         tuple("L016", "cancelled"));
@@ -55,7 +55,7 @@ class TutorScheduleTest {
     void changesBeforeTheLockAreHistoryNotAlerts() {
         // Fri 03-06 locks at Thu 16:00, two hours after "now"
         service.cancel(idOf("L018"), "family cancelled");
-        TutorSchedule day = query.forDay("T1", LocalDate.parse("2026-03-06"));
+        DaySchedule day = query.forDay("T1", LocalDate.parse("2026-03-06"));
         assertThat(day.locked()).isFalse();
         assertThat(day.revision()).isEqualTo(1);
         assertThat(day.changedAfterLock()).isEmpty();
@@ -67,8 +67,8 @@ class TutorScheduleTest {
         LessonView moved = service.reschedule(original, new RescheduleLessonRequest(
                 LocalDateTime.parse("2026-03-07T13:00"), null, null, null, "exam moved"));
 
-        TutorSchedule day = query.forDay("T3", LocalDate.parse("2026-03-07"));
-        TutorSchedule.Entry old = day.lessons().stream().filter(l -> l.lessonId() == original).findFirst().orElseThrow();
+        DaySchedule day = query.forDay("T3", LocalDate.parse("2026-03-07"));
+        DaySchedule.Entry old = day.lessons().stream().filter(l -> l.lessonId() == original).findFirst().orElseThrow();
         assertThat(old.status()).isEqualTo("rescheduled");
         assertThat(old.replacedByLessonId()).isEqualTo(moved.id());
         assertThat(old.replacedByStartsAt().toLocalTime()).hasToString("13:00");
@@ -78,8 +78,8 @@ class TutorScheduleTest {
     @Test
     void importedSeedCancellationIsShownWithItsHistory() {
         // L017 (T3, Thu 16:00) was cancelled at 14:40 the same day in the spreadsheet: charged, after lock
-        TutorSchedule day = query.forDay("T3", LocalDate.parse("2026-03-05"));
-        TutorSchedule.Entry l017 = day.lessons().stream()
+        DaySchedule day = query.forDay("T3", LocalDate.parse("2026-03-05"));
+        DaySchedule.Entry l017 = day.lessons().stream()
                 .filter(l -> "L017".equals(l.externalRef())).findFirst().orElseThrow();
         assertThat(l017.lateCancel()).isTrue();
         assertThat(l017.changes()).singleElement().satisfies(c -> {

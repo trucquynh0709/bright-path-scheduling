@@ -383,7 +383,7 @@ const SOFT_RULES = ['closed_on_monday', 'max_6_lessons_per_tutor_per_day'];
 const FOUR_HOURS_MS = 4 * 3600 * 1000;
 
 let ref = null;
-let week = [];      // seven TutorSchedule objects, Monday first
+let week = [];      // seven DaySchedule objects, Monday first
 let current = null; // lesson the open dialog acts on
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
