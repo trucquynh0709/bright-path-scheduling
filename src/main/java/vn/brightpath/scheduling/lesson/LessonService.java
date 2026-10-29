@@ -2,6 +2,7 @@ package vn.brightpath.scheduling.lesson;
 
 import java.sql.Timestamp;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -33,7 +34,38 @@ public class LessonService {
 
     @Transactional
     public LessonView book(BookLessonRequest req) {
-        return insertLesson(req, null);
+        return insertLesson(req, null, req.overrideReason());
+    }
+
+    /**
+     * Moves a booked lesson. The original row becomes 'rescheduled' (slot released, still visible
+     * to its tutor) and a new row is booked through the same checks as a fresh booking, pointing
+     * back via replaces_lesson_id. If the new slot is rejected the whole move rolls back and the
+     * original lesson is untouched.
+     */
+    @Transactional
+    public LessonView reschedule(long lessonId, RescheduleLessonRequest req) {
+        Instant oldStart = lockBookedLesson(lessonId);
+        Instant now = clock.instant();
+        if (!now.isBefore(oldStart)) {
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, "lesson_already_started",
+                    "Lesson " + lessonId + " has already started and cannot be moved");
+        }
+        LessonView old = lessons.findById(lessonId);
+        int oldDuration = (int) Duration.between(old.startsAt(), old.endsAt()).toMinutes();
+
+        jdbc.update("UPDATE lesson SET status = 'rescheduled' WHERE id = ?", lessonId);
+        lessons.recordChange(lessonId, "rescheduled", oldStart, now, req.reason());
+
+        BookLessonRequest moved = new BookLessonRequest(
+                old.studentId(),
+                req.tutorId() != null ? req.tutorId() : old.tutorId(),
+                req.roomId() != null ? req.roomId() : old.roomId(),
+                req.startsAt(),
+                req.durationMin() != null ? req.durationMin() : oldDuration,
+                req.overrideReason());
+        String why = "moved from lesson " + lessonId + (req.reason() == null ? "" : ": " + req.reason());
+        return insertLesson(moved, lessonId, why);
     }
 
     /**
@@ -68,7 +100,7 @@ public class LessonService {
         return lessons.findById(lessonId);
     }
 
-    private LessonView insertLesson(BookLessonRequest req, Long replacesLessonId) {
+    private LessonView insertLesson(BookLessonRequest req, Long replacesLessonId, String changeReason) {
         if (!CenterRules.ALLOWED_DURATIONS_MIN.contains(req.durationMin())) {
             throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, "lesson_duration_60_or_90",
                     "A lesson is 60 or 90 minutes, got " + req.durationMin());
@@ -108,7 +140,7 @@ public class LessonService {
                     req.studentId(), req.tutorId(), req.roomId(), Timestamp.from(start), Timestamp.from(end),
                     softRuleBreaks.isEmpty() ? null : req.overrideReason(), replacesLessonId);
             // A booking made after the 16:00 lock is itself a change the tutor must be shown.
-            lessons.recordChange(id, "booked", start, clock.instant(), req.overrideReason());
+            lessons.recordChange(id, "booked", start, clock.instant(), changeReason);
             return lessons.findById(id);
         } catch (DataIntegrityViolationException e) {
             // Another booking for the same student or room committed between our check and insert.

@@ -33,6 +33,13 @@ public class LessonController {
         return service.cancel(id, req == null ? null : req.reason());
     }
 
+    /** Returns the NEW lesson; the original keeps its id with status 'rescheduled'. */
+    @PostMapping("/{id}/reschedule")
+    public ResponseEntity<LessonView> reschedule(@PathVariable long id, @Valid @RequestBody RescheduleLessonRequest req) {
+        LessonView lesson = service.reschedule(id, req);
+        return ResponseEntity.created(URI.create("/lessons/" + lesson.id())).body(lesson);
+    }
+
     @PostMapping("/{id}/no-show")
     public LessonView noShow(@PathVariable long id) {
         return service.markNoShow(id);
