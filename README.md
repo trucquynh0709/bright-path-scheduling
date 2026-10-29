@@ -56,7 +56,7 @@ Open **http://localhost:8081/**. It is a single page with Vietnamese labels, for
   - **Day counts:** lessons, tutors teaching, cancelled or moved, changes after the 16:00 cut-off.
   - **Bây giờ:** who is in each room right now, or when the room is next used.
   - **Cần báo lại gia sư:** every lesson changed after the cut-off, with the tutor's phone number to call.
-  - **Cả ngày theo gia sư:** one horizontal track per tutor, with a red "now" line. A tutor above 6 lessons (only possible in imported history) is flagged.
+  - **Cả ngày theo phòng:** one horizontal track per room (R1–R6) showing student, time and tutor, with a red "now" line.
 - **Lịch gia sư** (for a tutor): one tutor's week as a calendar. `?tutor=T1&date=2026-03-05` opens it directly. That is the link to send a tutor instead of a chain of messages.
   - The colour bar on each block shows its status: green booked, grey cancelled or moved, amber no-show.
   - An amber dot marks a change after the cut-off.
