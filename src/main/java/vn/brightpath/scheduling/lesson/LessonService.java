@@ -33,13 +33,13 @@ public class LessonService {
     @Transactional
     public LessonView book(BookLessonRequest req) {
         if (!CenterRules.ALLOWED_DURATIONS_MIN.contains(req.durationMin())) {
-            throw new BookingRejectedException(HttpStatus.UNPROCESSABLE_CONTENT, "lesson_duration_60_or_90",
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, "lesson_duration_60_or_90",
                     "A lesson is 60 or 90 minutes, got " + req.durationMin());
         }
         Instant start = req.startsAt().atZone(CenterRules.CENTER_ZONE).toInstant();
         Instant end = start.plusSeconds(60L * req.durationMin());
         if (start.isBefore(clock.instant())) {
-            throw new BookingRejectedException(HttpStatus.UNPROCESSABLE_CONTENT, "booking_in_the_past",
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, "booking_in_the_past",
                     "Cannot book a lesson that starts before now (" + clock.instant().atZone(CenterRules.CENTER_ZONE) + ")");
         }
 
@@ -52,7 +52,7 @@ public class LessonService {
         List<String> softRuleBreaks = softRuleBreaks(req.tutorId(), req.startsAt().toLocalDate());
         boolean hasReason = req.overrideReason() != null && !req.overrideReason().isBlank();
         if (!softRuleBreaks.isEmpty() && !hasReason) {
-            throw new BookingRejectedException(HttpStatus.UNPROCESSABLE_CONTENT, softRuleBreaks.get(0),
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, softRuleBreaks.get(0),
                     "Breaks center rules " + softRuleBreaks + "; resend with overrideReason to book anyway",
                     softRuleBreaks);
         }
@@ -109,12 +109,12 @@ public class LessonService {
         }
     }
 
-    private static BookingRejectedException notFound(String what, Object id) {
-        return new BookingRejectedException(HttpStatus.NOT_FOUND, what + "_not_found", "No " + what + " with id " + id);
+    private static RuleViolationException notFound(String what, Object id) {
+        return new RuleViolationException(HttpStatus.NOT_FOUND, what + "_not_found", "No " + what + " with id " + id);
     }
 
-    private static BookingRejectedException clash(String rule, List<Conflict> conflicts) {
-        return new BookingRejectedException(HttpStatus.CONFLICT, rule,
+    private static RuleViolationException clash(String rule, List<Conflict> conflicts) {
+        return new RuleViolationException(HttpStatus.CONFLICT, rule,
                 "Clashes with an existing lesson (" + rule + ")", conflicts);
     }
 

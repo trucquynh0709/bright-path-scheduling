@@ -4,9 +4,7 @@ import java.net.URI;
 
 import jakarta.validation.Valid;
 
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,16 +24,5 @@ public class LessonController {
     public ResponseEntity<LessonView> book(@Valid @RequestBody BookLessonRequest req) {
         LessonView lesson = service.book(req);
         return ResponseEntity.created(URI.create("/lessons/" + lesson.id())).body(lesson);
-    }
-
-    @ExceptionHandler(BookingRejectedException.class)
-    public ProblemDetail rejected(BookingRejectedException e) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(e.status(), e.getMessage());
-        problem.setTitle("Booking rejected");
-        problem.setProperty("rule", e.rule());
-        if (!e.details().isEmpty()) {
-            problem.setProperty("details", e.details());
-        }
-        return problem;
     }
 }

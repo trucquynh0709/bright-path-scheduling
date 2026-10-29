@@ -75,7 +75,7 @@ class LessonBookingTest {
     void studentCannotBeInTwoPlacesAtOnce() {
         // Le Minh Chau already has L019: Fri 09:00-10:00 with T2 in R2
         assertThatThrownBy(() -> service.book(request(LE_MINH_CHAU, "T3", "R4", "2026-03-06T09:30", 60, null)))
-                .isInstanceOfSatisfying(BookingRejectedException.class, e -> {
+                .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.status()).isEqualTo(HttpStatus.CONFLICT);
                     assertThat(e.rule()).isEqualTo("no_student_double_booking");
                     assertThat(e.details()).isEqualTo(List.of(new Conflict("no_student_double_booking", 19, "L019")));
@@ -87,7 +87,7 @@ class LessonBookingTest {
         // L018 is T1 in R1 on Fri 09:00
         assertThatThrownBy(() -> service.book(
                 request(BUI_AN_NHIEN, "T1", "R1", "2026-03-06T09:00", 60, "exam pair - half price")))
-                .isInstanceOfSatisfying(BookingRejectedException.class,
+                .isInstanceOfSatisfying(RuleViolationException.class,
                         e -> assertThat(e.status()).isEqualTo(HttpStatus.CONFLICT));
     }
 
@@ -103,7 +103,7 @@ class LessonBookingTest {
         // T1 already has 7 lessons on Fri 2026-03-06 in the export
         BookLessonRequest withoutReason = request(DO_VAN_KIEN, "T1", "R5", "2026-03-06T07:00", 60, null);
         assertThatThrownBy(() -> service.book(withoutReason))
-                .isInstanceOfSatisfying(BookingRejectedException.class, e -> {
+                .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.status()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
                     assertThat(e.rule()).isEqualTo(CenterRules.RULE_MAX_PER_DAY);
                 });
@@ -115,7 +115,7 @@ class LessonBookingTest {
     @Test
     void cannotBookBeforeSimulatedNow() {
         assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T2", "R4", "2026-03-05T13:00", 60, null)))
-                .isInstanceOfSatisfying(BookingRejectedException.class,
+                .isInstanceOfSatisfying(RuleViolationException.class,
                         e -> assertThat(e.rule()).isEqualTo("booking_in_the_past"));
     }
 
