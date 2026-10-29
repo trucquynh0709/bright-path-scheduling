@@ -13,7 +13,7 @@
     --primary: #0b6fb8; --primary-hover: #095d9b; --primary-soft: #e8f2fb; --primary-text: #0b5f9e; --on-primary: #ffffff;
     --green-bar: #22c55e; --green-bg: #dcfce7; --green: #15803d;
     --gray-bar: #9ca3af; --gray-bg: #eceef1;
-    --amber-bar: #f59e0b; --amber-bg: #fef3c7; --amber: #b45309; --amber-soft: #fffbeb;
+    --amber-bar: #f59e0b; --amber-bg: #fef3c7; --amber: #b45309; --amber-soft: #fffbeb; --amber-border: #fde68a;
     --red-soft: #fef2f2; --red: #b91c1c; --red-solid: #dc2626;
     --blue-soft: #eff6ff; --blue: #1d4ed8;
     --shadow: 0 1px 2px rgba(16, 24, 40, .05);
@@ -146,6 +146,55 @@
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .legend i { width: 12px; height: 12px; border-radius: 3px; }
 
+  /* ---------- today dashboard (operations view, not a calendar) ---------- */
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .stat { padding: 12px 16px; }
+  .stat .k { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .stat .v { font-size: 24px; font-weight: 700; line-height: 1.2; margin-top: 2px; }
+  .stat.alert { background: var(--amber-soft); border-color: var(--amber-border); }
+  .stat.alert .v, .stat.alert .k { color: var(--amber); }
+  .dash { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 14px; margin-bottom: 14px; }
+  @media (max-width: 1100px) { .dash { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 720px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .panel { padding: 14px 16px; }
+  .panel-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 10px; }
+  .panel-head h2 { margin: 0; font-size: 15px; }
+  .panel-head .legend { margin: 0 0 0 auto; }
+  .rooms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  @media (max-width: 560px) { .rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .room { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; text-align: left; background: var(--surface);
+          min-height: 64px; display: flex; flex-direction: column; gap: 1px; font-size: 12.5px; }
+  .room b { font-size: 13px; display: flex; justify-content: space-between; gap: 6px; }
+  .room .who { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .room .sub { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .room.busy { background: var(--green-bg); border-color: transparent; box-shadow: inset 4px 0 0 var(--green-bar); cursor: pointer; }
+  .room.busy.noshow { background: var(--amber-bg); box-shadow: inset 4px 0 0 var(--amber-bar); }
+  .room .tag { font-size: 11px; font-weight: 600; color: var(--green); }
+  .room.free .tag { color: var(--faint); }
+  .tell { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 0; border-top: 1px solid var(--border); cursor: pointer; }
+  .tell:first-child { border-top: 0; padding-top: 0; }
+  .tell .what { font-weight: 600; }
+  .tell .what s { color: var(--muted); font-weight: 500; }
+  .tell .why { color: var(--muted); font-size: 12.5px; grid-column: 1; }
+  .tell .phone { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-variant-numeric: tabular-nums;
+                 color: var(--primary-text); font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .ok-note { display: flex; gap: 8px; align-items: center; color: var(--green); font-size: 13px; }
+  .gantt-scroll { overflow-x: auto; }
+  .gantt { min-width: 760px; }
+  .g-row { display: grid; grid-template-columns: 130px 1fr; align-items: stretch; border-top: 1px solid var(--grid); }
+  .g-row.head { border-top: 0; }
+  .g-name { padding: 8px 8px 8px 0; font-weight: 600; font-size: 13px; line-height: 1.25; }
+  .g-name small { display: block; color: var(--muted); font-weight: 400; }
+  .g-name small.over { color: var(--red); font-weight: 600; }
+  .g-hour:last-child { transform: translateX(-100%); }
+  .g-track { position: relative; height: 46px;
+             background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px); }
+  .g-row.head .g-track { height: 20px; background: none; }
+  .g-hour { position: absolute; top: 0; font-size: 11px; color: var(--muted); transform: translateX(-50%); font-variant-numeric: tabular-nums; }
+  .g-now { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px solid var(--red-solid); z-index: 3; }
+  .g-track .lesson { padding: 2px 6px 2px 8px; }
+  .g-empty { position: absolute; inset: 0; display: flex; align-items: center; padding-left: 8px; color: var(--faint); font-size: 12px; }
+
   /* ---------- booking ---------- */
   .book-card { max-width: 620px; }
   .book-card form { display: grid; gap: 14px; padding: 22px; }
@@ -234,14 +283,27 @@
           <button class="btn icon ghost" id="nextDay" aria-label="Ngày sau"><svg class="i"><use href="#i-right"/></svg></button>
         </div>
       </div>
-      <div class="summary" id="daySummary"></div>
-      <div class="cal-scroll"><div class="cal" id="roomGrid"></div></div>
-      <div class="legend">
-        <span><i style="background:var(--green-bar)"></i>Đã đặt</span>
-        <span><i style="background:var(--gray-bar)"></i>Đã hủy / đã dời</span>
-        <span><i style="background:var(--amber-bar)"></i>Vắng mặt</span>
-        <span><i style="background:var(--amber-bar);border-radius:50%"></i>Đổi sau giờ chốt 16:00</span>
-        <span><i style="background:var(--red-solid);height:2px"></i>Bây giờ</span>
+      <div class="stats" id="todayStats"></div>
+
+      <div class="dash">
+        <div class="card panel" id="nowPanel">
+          <div class="panel-head"><h2>Bây giờ</h2><span class="hint" id="nowAt"></span></div>
+          <div class="rooms" id="roomTiles"></div>
+        </div>
+        <div class="card panel" id="tellPanel">
+          <div class="panel-head"><h2>Cần báo lại gia sư</h2><span class="hint">đổi sau giờ chốt 16:00</span></div>
+          <div id="tellList"></div>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <div class="panel-head"><h2>Cả ngày theo gia sư</h2>
+          <span class="legend">
+            <span><i style="background:var(--green-bar)"></i>Đã đặt</span>
+            <span><i style="background:var(--gray-bar)"></i>Hủy / dời</span>
+            <span><i style="background:var(--amber-bar)"></i>Vắng mặt</span>
+          </span></div>
+        <div class="gantt-scroll"><div class="gantt" id="gantt"></div></div>
       </div>
     </section>
 
@@ -553,41 +615,125 @@ function remember(days) {
   days.forEach((day) => day.lessons.forEach((lesson) => shown.set(lesson.lessonId, { lesson, day })));
 }
 
-function summaryHtml(days, { countTutors }) {
+/** One-line summary above a tutor's week. */
+function weekSummaryHtml(days) {
   const lessons = days.flatMap((d) => d.lessons);
   const changed = days.reduce((n, d) => n + d.changedAfterLock.length, 0);
-  const parts = [`<span><b>${lessons.filter((l) => l.status === 'booked').length}</b>buổi đã đặt</span>`];
-  if (countTutors) parts.push(`<span><b>${new Set(lessons.filter(holdsSlot).map((l) => l.tutorId)).size}</b>gia sư</span>`);
-  parts.push(`<span><b>${lessons.filter((l) => l.status === 'cancelled' || l.status === 'rescheduled').length}</b>hủy / dời</span>`);
+  const parts = [
+    `<span><b>${lessons.filter((l) => l.status === 'booked').length}</b>buổi đã đặt</span>`,
+    `<span><b>${lessons.filter((l) => l.status === 'cancelled' || l.status === 'rescheduled').length}</b>hủy / dời</span>`,
+  ];
   if (changed) parts.push(`<span class="warn">${icon('alert')}${changed} buổi đổi sau giờ chốt 16:00, cần báo lại gia sư</span>`);
   return parts.join('');
 }
 
-/* ---------------- Hôm nay: the centre, rooms x hours ---------------- */
-// Fit the whole day in the window: the owner wants to "see today. Not scroll."
-// 215px is the page chrome around the grid (title, summary, column headers, legend).
-const fittedHourPx = () => Math.max(34, Math.min(64, Math.floor((window.innerHeight - 215) / (DEFAULT_END_HOUR - DEFAULT_START_HOUR))));
+/* ---------------- Hôm nay: the centre's day, for the owner and Mai ---------------- */
+// An operations view, not a calendar: what is happening now, which tutors need a call,
+// and who teaches when, all on one screen (the owner: "see today. Not scroll. See it.").
+const tutorById = (id) => ref.tutors.find((t) => t.id === id) || { name: id, phone: '' };
 
 async function loadToday() {
   history.replaceState(null, '', `${location.pathname}?date=${dayDate}#today`);
-  $('todayTitle').textContent = dayDate === ref.now.slice(0, 10) ? 'Hôm nay' : LONG_WEEKDAYS[dow(dayDate)];
+  const isToday = dayDate === ref.now.slice(0, 10);
+  $('todayTitle').textContent = isToday ? 'Hôm nay' : LONG_WEEKDAYS[dow(dayDate)];
   $('dayLabel').textContent = `${LONG_WEEKDAYS[dow(dayDate)]}, ${ddmm(dayDate)}/${dayDate.slice(0, 4)}`;
   let day;
   try {
     day = await api('GET', `/schedule?date=${dayDate}`);
   } catch (e) { toast(false, explain(e)); return; }
   remember([day]);
-  $('daySummary').innerHTML = (day.locked ? `<span>${icon('lock')} Đã chốt ${hhmm(day.lockedAt)} ${shortDay(day.lockedAt)}</span>` : '')
-    + summaryHtml([day], { countTutors: true });
-  const closed = dow(day.date) === 1 ? 'closed' : '';
-  const columns = ref.rooms.map((room) => ({
-    head: `<span class="title">Phòng ${esc(room)}</span>`,
-    cls: closed, day, lessons: day.lessons.filter((l) => l.roomId === room),
-  }));
-  renderGrid($('roomGrid'), columns, fittedHourPx(), (l) => [
-    `<span class="n">${esc(l.studentName)}</span>`,
-    `<span class="m">${hhmm(l.startsAt)}–${hhmm(l.endsAt)} · ${esc(l.tutorName)}</span>`,
-  ]);
+
+  const active = day.lessons.filter(holdsSlot);
+  const changed = day.lessons.filter((l) => day.changedAfterLock.includes(l.lessonId));
+  const stat = (k, v, cls = '') => `<div class="card stat ${cls}"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  $('todayStats').innerHTML = [
+    stat('Buổi học', active.length),
+    stat('Gia sư dạy', new Set(active.map((l) => l.tutorId)).size),
+    stat('Hủy / dời', day.lessons.length - active.length),
+    stat('Đổi sau giờ chốt', changed.length, changed.length ? 'alert' : ''),
+  ].join('');
+
+  renderNow(active, isToday);
+  renderTell(day, changed);
+  renderGantt(day, isToday);
+}
+
+/** Six room tiles: who is in each room right now, or when it is next used. Only for today. */
+function renderNow(active, isToday) {
+  $('nowPanel').classList.toggle('hidden', !isToday);
+  $('nowPanel').parentElement.style.gridTemplateColumns = isToday ? '' : 'minmax(0, 1fr)';
+  if (!isToday) return;
+  $('nowAt').textContent = `lúc ${hhmm(ref.now)}`;
+  $('roomTiles').innerHTML = ref.rooms.map((room) => {
+    const inRoom = active.filter((l) => l.roomId === room).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+    const running = inRoom.find((l) => l.startsAt <= ref.now && ref.now < l.endsAt);
+    if (running) {
+      return `<button type="button" class="room busy ${running.status === 'no_show' ? 'noshow' : ''}" data-id="${running.lessonId}">
+        <b>Phòng ${esc(room)}<span class="tag">${running.status === 'no_show' ? 'Vắng mặt' : `đến ${hhmm(running.endsAt)}`}</span></b>
+        <span class="who">${esc(running.studentName)}</span><span class="sub">${esc(running.tutorName)}</span></button>`;
+    }
+    const next = inRoom.find((l) => l.startsAt > ref.now);
+    return `<div class="room free"><b>Phòng ${esc(room)}<span class="tag">Trống</span></b>
+      <span class="sub">${next ? `Tiếp theo ${hhmm(next.startsAt)} · ${esc(next.studentName)}` : 'Hết buổi hôm nay'}</span></div>`;
+  }).join('');
+}
+
+/** Lessons changed after the cut-off: the tutor may still be working from the old schedule. */
+function renderTell(day, changed) {
+  const when = `${hhmm(day.lockedAt)} ${shortDay(day.lockedAt)}`;
+  if (!changed.length) {
+    $('tellList').innerHTML = `<div class="ok-note">${icon('check')}${day.locked
+      ? 'Không có thay đổi nào sau giờ chốt. Lịch đã gửi cho gia sư vẫn đúng.'
+      : `Chưa tới giờ chốt (${when}). Thay đổi trước giờ chốt nằm sẵn trong lịch gửi đi.`}</div>`;
+    return;
+  }
+  $('tellList').innerHTML = [...changed].sort((a, b) => a.startsAt.localeCompare(b.startsAt)).map((l) => {
+    const t = tutorById(l.tutorId);
+    const last = [...l.changes].reverse().find((c) => c.afterLock);
+    const state = l.status === 'cancelled' ? 'đã hủy'
+      : l.status === 'rescheduled' ? `đã dời → ${shortDay(l.replacedByStartsAt)} ${hhmm(l.replacedByStartsAt)}`
+      : l.status === 'no_show' ? 'vắng mặt' : 'mới đặt';
+    return `<div class="tell" data-id="${l.lessonId}">
+      <span class="what">${hhmm(l.startsAt)} ${esc(l.studentName)} <s>${state}</s></span>
+      <a class="phone" href="tel:${esc(t.phone)}" title="Gọi ${esc(t.name)}">${esc(t.name)} · ${esc(t.phone)}</a>
+      <span class="why">${CHANGE[last.change] || last.change} lúc ${hhmm(last.changedAt)} ${shortDay(last.changedAt)}${last.reason ? ' · ' + esc(last.reason) : ''}</span>
+    </div>`;
+  }).join('');
+}
+
+/** One horizontal track per tutor across the day: who teaches when, at a glance. */
+function renderGantt(day, isToday) {
+  const all = day.lessons;
+  const startHour = Math.min(DEFAULT_START_HOUR, ...all.map((l) => Math.floor(minutesOfDay(l.startsAt) / 60)));
+  const endHour = Math.max(DEFAULT_END_HOUR, ...all.map((l) => Math.ceil(minutesOfDay(l.endsAt) / 60)));
+  const span = (endHour - startHour) * 60;
+  const pct = (iso) => ((minutesOfDay(iso) - startHour * 60) / span) * 100;
+  const gridBg = `background-size:${100 / (endHour - startHour)}% 100%`;
+  const nowPct = pct(ref.now);
+  const nowLine = isToday && nowPct >= 0 && nowPct <= 100 ? `<div class="g-now" style="left:${nowPct}%"></div>` : '';
+  const changed = new Set(day.changedAfterLock);
+
+  const hours = [];
+  for (let h = startHour; h <= endHour; h += 1) {
+    hours.push(`<span class="g-hour" style="left:${((h - startHour) * 60 / span) * 100}%">${String(h).padStart(2, '0')}</span>`);
+  }
+  const rows = ref.tutors.map((t) => {
+    const lessons = all.filter((l) => l.tutorId === t.id);
+    const blocks = layoutLanes(lessons).map(({ lesson: l, lane, lanes }) => {
+      const cls = l.status === 'cancelled' || l.status === 'rescheduled' ? 'inactive' : l.status === 'no_show' ? 'noshow' : '';
+      const h = 46 / lanes;
+      return `<button type="button" class="lesson ${cls} ${l.endsAt <= ref.now ? 'past' : ''} ${changed.has(l.lessonId) ? 'changed' : ''}"
+        data-id="${l.lessonId}" title="${hhmm(l.startsAt)}–${hhmm(l.endsAt)} · ${esc(l.studentName)} · Phòng ${esc(l.roomId)}"
+        style="left:calc(${pct(l.startsAt)}% + 1px);width:calc(${pct(l.endsAt) - pct(l.startsAt)}% - 2px);top:${lane * h + 3}px;height:${h - 6}px">
+        <span class="n">${esc(l.studentName)}</span></button>`;
+    }).join('');
+    // Over 6 can only come from imported history (L018-L027); new bookings are refused at 6.
+    const count = lessons.filter(holdsSlot).length;
+    const over = count > 6 ? 'over' : '';
+    return `<div class="g-row"><div class="g-name">${esc(t.name)}<small class="${over}">${count}/6 buổi${over ? ' · vượt giới hạn' : ''}</small></div>
+      <div class="g-track" style="${gridBg}">${blocks || '<div class="g-empty">Không có buổi</div>'}${nowLine}</div></div>`;
+  }).join('');
+  $('gantt').innerHTML = `<div class="g-row head"><div></div><div class="g-track">${hours.join('')}</div></div>${rows}`;
 }
 
 /* ---------------- Lịch gia sư: one tutor's week ---------------- */
@@ -602,7 +748,7 @@ async function loadWeek() {
     week = await Promise.all(dates.map((d) => api('GET', `/tutors/${encodeURIComponent($('tutor').value)}/schedule?date=${d}`)));
   } catch (e) { toast(false, explain(e)); return; }
   remember(week);
-  $('weekSummary').innerHTML = summaryHtml(week, { countTutors: false });
+  $('weekSummary').innerHTML = weekSummaryHtml(week);
   const today = ref.now.slice(0, 10);
   const columns = week.map((day) => ({
     head: `<span class="num">${Number(day.date.slice(8, 10))}</span><span class="sub">${WEEKDAYS[dow(day.date)]}${day.locked ? ' · đã chốt' : ''}</span>`,
@@ -617,9 +763,11 @@ async function loadWeek() {
   ]);
 }
 
-['roomGrid', 'weekGrid'].forEach((id) => $(id).addEventListener('click', (e) => {
-  const b = e.target.closest('.lesson');
-  if (b) openDetail(Number(b.dataset.id));
+// Any lesson block, busy room tile or "tell the tutor" row opens the lesson's detail dialog.
+['view-today', 'weekGrid'].forEach((id) => $(id).addEventListener('click', (e) => {
+  if (e.target.closest('a.phone')) return;
+  const el = e.target.closest('[data-id]');
+  if (el) openDetail(Number(el.dataset.id));
 }));
 
 /* ---------------- detail dialog ---------------- */
@@ -811,8 +959,6 @@ async function init() {
   document.querySelector('[data-open-nav]').addEventListener('click', () => $('app').classList.add('nav-open'));
   document.querySelector('[data-close-nav]').addEventListener('click', () => $('app').classList.remove('nav-open'));
   window.addEventListener('hashchange', showView);
-  let resizeTimer;
-  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => currentView() === 'today' && loadToday(), 200); });
   showView();
 }
 
