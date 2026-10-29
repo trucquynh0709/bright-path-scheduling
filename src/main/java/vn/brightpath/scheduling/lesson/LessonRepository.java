@@ -51,6 +51,18 @@ public class LessonRepository {
         return n == null ? 0 : n;
     }
 
+    public LessonView findById(long id) {
+        return jdbc.queryForObject("""
+                SELECT id, external_ref, student_id, tutor_id, room_id, starts_at, ends_at, status, override_reason
+                FROM lesson WHERE id = ?
+                """, (rs, i) -> new LessonView(
+                rs.getLong("id"), rs.getString("external_ref"), rs.getLong("student_id"),
+                rs.getString("tutor_id"), rs.getString("room_id"),
+                rs.getTimestamp("starts_at").toInstant().atZone(CenterRules.CENTER_ZONE).toOffsetDateTime(),
+                rs.getTimestamp("ends_at").toInstant().atZone(CenterRules.CENTER_ZONE).toOffsetDateTime(),
+                rs.getString("status"), rs.getString("override_reason")), id);
+    }
+
     public long countAll() {
         Long n = jdbc.queryForObject("SELECT count(*) FROM lesson", Long.class);
         return n == null ? 0 : n;
