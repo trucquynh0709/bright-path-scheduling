@@ -5,11 +5,6 @@ spring:
     url: ${DB_URL:jdbc:postgresql://localhost:5433/brightpath}
     username: ${DB_USER:brightpath}
     password: ${DB_PASSWORD:brightpath}
-  jpa:
-    # Schema is owned by Flyway migrations, never by Hibernate
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
   flyway:
     enabled: true
 
