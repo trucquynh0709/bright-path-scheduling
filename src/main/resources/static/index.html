@@ -18,7 +18,6 @@
     --blue-soft: #eff6ff; --blue: #1d4ed8;
     --shadow: 0 1px 2px rgba(16, 24, 40, .05);
     --shadow-lg: 0 20px 40px -12px rgba(16, 24, 40, .25);
-    --hour: 64px; /* height of one hour in the week grid */
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
@@ -30,7 +29,7 @@
 
   /* ---------- layout ---------- */
   .app { display: flex; min-height: 100%; }
-  .sidebar { width: 248px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
+  .sidebar { width: 236px; flex-shrink: 0; background: var(--surface); border-right: 1px solid var(--border);
              display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
   .brand { display: flex; align-items: center; gap: 10px; padding: 20px 22px 16px; }
   .brand .logo { width: 34px; height: 34px; border-radius: 50%; background: var(--primary); color: var(--on-primary);
@@ -45,8 +44,10 @@
   .clock { margin: auto 22px 20px; display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
   .topbar { display: none; }
   .content { flex: 1; min-width: 0; }
-  .page { padding: 28px 32px 40px; }
-  .page h1 { margin: 0 0 20px; font-size: 26px; font-weight: 700; }
+  .page { padding: 22px 28px 28px; }
+  .page-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-bottom: 14px; }
+  .page-head h1 { margin: 0; font-size: 24px; font-weight: 700; }
+  .page-head .spacer { flex: 1; }
 
   @media (max-width: 900px) {
     .sidebar { position: fixed; z-index: 30; left: 0; top: 0; transform: translateX(-100%); transition: transform .2s ease;
@@ -56,8 +57,8 @@
     .app.nav-open .scrim { display: block; }
     .topbar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--surface);
               border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
-    .page { padding: 20px 16px 32px; }
-    .page h1 { font-size: 22px; margin-bottom: 14px; }
+    .page { padding: 16px 16px 24px; }
+    .page-head h1 { font-size: 20px; }
   }
 
   /* ---------- primitives ---------- */
@@ -94,53 +95,54 @@
   .callout.blue { background: var(--blue-soft); color: var(--blue); }
   .hidden { display: none !important; }
 
-  /* ---------- week toolbar ---------- */
-  .cal-card { padding: 20px; }
-  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
-  .toolbar .tutor { width: 260px; max-width: 100%; }
-  .toolbar .spacer { flex: 1; }
-  .week-nav { display: flex; align-items: center; gap: 4px; padding: 0 4px; height: 40px; border: 1px solid var(--border-strong);
-              border-radius: 10px; background: var(--surface); }
-  .week-nav span { min-width: 190px; text-align: center; font-weight: 500; font-variant-numeric: tabular-nums; }
-  .week-nav .btn { height: 32px; width: 32px; border: 0; }
-  .notice { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; padding: 9px 12px; border-radius: 10px;
-            background: var(--amber-soft); color: var(--amber); font-size: 13px; font-weight: 500; }
+  /* ---------- toolbars ---------- */
+  .stepper { display: flex; align-items: center; gap: 2px; padding: 0 3px; height: 40px; border: 1px solid var(--border-strong);
+             border-radius: 10px; background: var(--surface); }
+  .stepper span { min-width: 176px; text-align: center; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .stepper .btn { height: 32px; width: 32px; border: 0; }
+  .tutor-select { width: 240px; max-width: 100%; }
+  .summary { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; margin-bottom: 10px; color: var(--muted); font-size: 13px; }
+  .summary b { color: var(--text); font-size: 15px; margin-right: 3px; }
+  .summary .warn { color: var(--amber); font-weight: 500; display: inline-flex; gap: 6px; align-items: center; }
+  .summary .warn svg { width: 16px; height: 16px; }
 
-  /* ---------- week grid ---------- */
-  .cal-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
-  .cal { display: grid; grid-template-columns: 64px repeat(7, minmax(112px, 1fr)); min-width: 848px; }
+  /* ---------- time grid (shared by the room view and the week view) ---------- */
+  .cal-scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .cal { display: grid; min-width: 720px; }
   .cal-head { display: contents; }
-  .cal-head > div { position: sticky; top: 0; z-index: 2; background: var(--surface); border-bottom: 1px solid var(--border);
-                    padding: 12px 4px 10px; text-align: center; }
-  .cal-head .num { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
-                   font-size: 18px; font-weight: 700; color: var(--primary-text); }
+  .cal-head > div { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 4px; text-align: center; }
+  .cal-head .title { display: block; font-weight: 700; color: var(--text); }
+  .cal-head .sub { display: block; font-size: 12px; color: var(--muted); }
+  .cal-head .num { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+                   font-size: 17px; font-weight: 700; color: var(--primary-text); }
   .cal-head .today .num { background: var(--primary); color: var(--on-primary); }
-  .cal-head .dow { display: block; color: var(--text-2); font-weight: 500; }
-  .cal-head .lock { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--faint); height: 16px; }
-  .cal-head .lock svg { width: 12px; height: 12px; }
-  .times { position: relative; }
-  .times div { height: var(--hour); padding: 4px 8px 0 0; text-align: right; font-size: 12px; font-weight: 600;
-               color: var(--muted); font-variant-numeric: tabular-nums; }
+  .times div { padding: 2px 8px 0 0; text-align: right; font-size: 12px; font-weight: 600; color: var(--muted);
+               font-variant-numeric: tabular-nums; }
   .col { position: relative; border-left: 1px solid var(--grid);
-         background-image: linear-gradient(to bottom, var(--grid) 1px, transparent 1px); background-size: 100% var(--hour); }
+         background-image: linear-gradient(to bottom, var(--grid) 1px, transparent 1px); }
   .col.closed { background-color: #fafafb; }
   .col.closed::after { content: "Nghỉ"; position: absolute; top: 8px; left: 0; right: 0; text-align: center;
                        font-size: 12px; color: var(--faint); }
   .col.today { background-color: color-mix(in srgb, var(--primary-soft) 45%, transparent); }
-  .lesson { position: absolute; display: flex; flex-direction: column; gap: 1px; padding: 6px 8px 6px 11px; overflow: hidden;
-            border: 0; border-radius: 8px; background: var(--green-bg); color: var(--text); text-align: left; cursor: pointer;
-            font-size: 12px; line-height: 1.3; box-shadow: inset 5px 0 0 var(--green-bar); transition: filter .15s; }
-  .lesson:hover { filter: brightness(.97); }
-  .lesson .t { color: var(--text-2); font-variant-numeric: tabular-nums; }
-  .lesson .n { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .lesson .r { color: var(--muted); }
-  .lesson.inactive { background: var(--gray-bg); box-shadow: inset 5px 0 0 var(--gray-bar); }
-  .lesson.inactive .n, .lesson.inactive .t { text-decoration: line-through; color: var(--muted); }
-  .lesson.noshow { background: var(--amber-bg); box-shadow: inset 5px 0 0 var(--amber-bar); }
+  .now-line { position: absolute; left: 0; right: 0; height: 0; border-top: 2px solid var(--red-solid); z-index: 1; }
+  .now-line.first::before { content: ""; position: absolute; left: -4px; top: -5px; width: 8px; height: 8px; border-radius: 50%;
+                            background: var(--red-solid); }
+  .lesson { position: absolute; display: flex; flex-direction: column; justify-content: flex-start; gap: 0;
+            padding: 3px 7px 3px 10px; overflow: hidden; border: 0; border-radius: 7px; background: var(--green-bg);
+            color: var(--text); text-align: left; cursor: pointer; font-size: 12px; line-height: 14px;
+            box-shadow: inset 4px 0 0 var(--green-bar); transition: filter .15s; z-index: 2; }
+  .lesson:hover { filter: brightness(.96); }
+  .lesson > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lesson .n { font-weight: 600; font-size: 12.5px; }
+  .lesson .m { color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .lesson .s { color: var(--muted); }
+  .lesson.inactive { background: var(--gray-bg); box-shadow: inset 4px 0 0 var(--gray-bar); }
+  .lesson.inactive .n, .lesson.inactive .m { text-decoration: line-through; color: var(--muted); }
+  .lesson.noshow { background: var(--amber-bg); box-shadow: inset 4px 0 0 var(--amber-bar); }
   .lesson.past { opacity: .7; }
-  .lesson.changed::after { content: ""; position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%;
+  .lesson.changed::after { content: ""; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%;
                            background: var(--amber-bar); box-shadow: 0 0 0 2px var(--surface); }
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 10px; font-size: 12px; color: var(--muted); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
   .legend i { width: 12px; height: 12px; border-radius: 3px; }
 
@@ -181,7 +183,8 @@
 <!-- Icons: lucide (ISC), inlined as a sprite so the page has no dependencies. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-cap" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/></symbol>
-  <symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></symbol>
+  <symbol id="i-today" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
@@ -204,7 +207,8 @@
     </div>
     <div class="nav-group">Vận hành</div>
     <nav class="nav">
-      <a href="#schedule" data-view="schedule"><svg class="i"><use href="#i-calendar"/></svg>Lịch dạy</a>
+      <a href="#today" data-view="today"><svg class="i"><use href="#i-today"/></svg>Hôm nay</a>
+      <a href="#tutor" data-view="tutor"><svg class="i"><use href="#i-user"/></svg>Lịch gia sư</a>
       <a href="#book" data-view="book"><svg class="i"><use href="#i-plus"/></svg>Đặt buổi học</a>
     </nav>
     <div class="clock" title="Mọi luật (hủy 4 tiếng, chốt 16:00) tính theo mốc này">
@@ -218,35 +222,50 @@
       <b>BRIGHT PATH</b>
     </div>
 
-    <!-- ================= Week schedule ================= -->
-    <section class="page" id="view-schedule">
-      <h1>Lịch dạy</h1>
-      <div class="card cal-card">
-        <div class="toolbar">
-          <select class="input tutor" id="tutor" aria-label="Gia sư"></select>
-          <div class="spacer"></div>
-          <button class="btn icon ghost" id="copyLink" title="Sao chép link lịch để gửi gia sư" aria-label="Sao chép link lịch">
-            <svg class="i"><use href="#i-link"/></svg></button>
-          <div class="week-nav">
-            <button class="btn icon ghost" id="prevWeek" aria-label="Tuần trước"><svg class="i"><use href="#i-left"/></svg></button>
-            <span id="weekLabel">…</span>
-            <button class="btn icon ghost" id="nextWeek" aria-label="Tuần sau"><svg class="i"><use href="#i-right"/></svg></button>
-          </div>
-        </div>
-        <div id="notice"></div>
-        <div class="cal-scroll"><div class="cal" id="cal"></div></div>
-        <div class="legend">
-          <span><i style="background:var(--green-bar)"></i>Đã đặt</span>
-          <span><i style="background:var(--gray-bar)"></i>Đã hủy / đã dời</span>
-          <span><i style="background:var(--amber-bar)"></i>Vắng mặt</span>
-          <span><i style="background:var(--amber-bar);border-radius:50%"></i>Đổi sau giờ chốt 16:00</span>
+    <!-- ================= Today: the whole centre, rooms x hours ================= -->
+    <section class="page" id="view-today">
+      <div class="page-head">
+        <h1 id="todayTitle">Hôm nay</h1>
+        <div class="spacer"></div>
+        <button class="btn" id="goToday">Hôm nay</button>
+        <div class="stepper">
+          <button class="btn icon ghost" id="prevDay" aria-label="Ngày trước"><svg class="i"><use href="#i-left"/></svg></button>
+          <span id="dayLabel">…</span>
+          <button class="btn icon ghost" id="nextDay" aria-label="Ngày sau"><svg class="i"><use href="#i-right"/></svg></button>
         </div>
       </div>
+      <div class="summary" id="daySummary"></div>
+      <div class="cal-scroll"><div class="cal" id="roomGrid"></div></div>
+      <div class="legend">
+        <span><i style="background:var(--green-bar)"></i>Đã đặt</span>
+        <span><i style="background:var(--gray-bar)"></i>Đã hủy / đã dời</span>
+        <span><i style="background:var(--amber-bar)"></i>Vắng mặt</span>
+        <span><i style="background:var(--amber-bar);border-radius:50%"></i>Đổi sau giờ chốt 16:00</span>
+        <span><i style="background:var(--red-solid);height:2px"></i>Bây giờ</span>
+      </div>
+    </section>
+
+    <!-- ================= Tutor: one tutor's week ================= -->
+    <section class="page hidden" id="view-tutor">
+      <div class="page-head">
+        <h1>Lịch gia sư</h1>
+        <select class="input tutor-select" id="tutor" aria-label="Gia sư"></select>
+        <div class="spacer"></div>
+        <button class="btn icon ghost" id="copyLink" title="Sao chép link lịch để gửi gia sư" aria-label="Sao chép link lịch">
+          <svg class="i"><use href="#i-link"/></svg></button>
+        <div class="stepper">
+          <button class="btn icon ghost" id="prevWeek" aria-label="Tuần trước"><svg class="i"><use href="#i-left"/></svg></button>
+          <span id="weekLabel">…</span>
+          <button class="btn icon ghost" id="nextWeek" aria-label="Tuần sau"><svg class="i"><use href="#i-right"/></svg></button>
+        </div>
+      </div>
+      <div class="summary" id="weekSummary"></div>
+      <div class="cal-scroll"><div class="cal" id="weekGrid"></div></div>
     </section>
 
     <!-- ================= Booking ================= -->
     <section class="page hidden" id="view-book">
-      <h1>Đặt buổi học</h1>
+      <div class="page-head"><h1>Đặt buổi học</h1></div>
       <div class="card book-card">
         <form id="bookForm" novalidate>
           <div class="field"><label for="bStudent">Học sinh</label><select class="input" id="bStudent" required></select></div>
@@ -259,13 +278,10 @@
             <div class="field"><label for="bDuration">Thời lượng</label>
               <select class="input" id="bDuration"><option value="60">60 phút</option><option value="90">90 phút</option></select></div>
           </div>
-          <div class="field hidden" id="bOverrideField">
-            <label for="bOverride">Lý do vượt luật</label>
-            <input class="input" id="bOverride" placeholder="vd. gia đình chỉ đến được Thứ Hai, owner đã duyệt">
-          </div>
+          <p class="hint" style="margin:0">Không nhận: trùng học sinh, gia sư hoặc phòng; Thứ Hai; gia sư đã đủ 6 buổi trong ngày.</p>
           <div id="bookMsg"></div>
           <div class="form-foot">
-            <a class="btn" href="#schedule">Hủy bỏ</a>
+            <a class="btn" href="#today">Hủy bỏ</a>
             <button class="btn primary" type="submit" id="bookSubmit">Đặt buổi</button>
           </div>
         </form>
@@ -324,8 +340,6 @@
         <div class="field"><label for="moveRoom">Phòng</label><select class="input" id="moveRoom"></select></div>
       </div>
       <div class="field"><label for="moveReason">Lý do</label><input class="input" id="moveReason" placeholder="vd. lịch thi đổi"></div>
-      <div class="field hidden" id="moveOverrideField"><label for="moveOverride">Lý do vượt luật</label>
-        <input class="input" id="moveOverride" placeholder="Thứ Hai hoặc quá 6 buổi/ngày"></div>
       <p class="hint" style="margin:0">Buổi cũ vẫn hiện trên lịch với trạng thái "Đã dời".</p>
       <div id="moveMsg"></div>
     </div>
@@ -360,10 +374,11 @@
 const $ = (id) => document.getElementById(id);
 const icon = (name) => `<svg class="i"><use href="#i-${name}"/></svg>`;
 
-// Visible hours of the week grid (center time). The seed runs 09:00 to 21:30.
-const GRID_START_HOUR = 8;
-const GRID_END_HOUR = 22;
-const HOUR_PX = 64; // keep in sync with --hour
+// Default visible hours (center time); the grid widens if a lesson falls outside them.
+// The brief says lessons run "mid-morning to mid-evening"; the seed runs 09:00 to 21:30.
+const DEFAULT_START_HOUR = 9;
+const DEFAULT_END_HOUR = 22;
+const LINE_PX = 14; // line height inside a lesson block, keep in sync with .lesson line-height
 
 const CHANGE = { booked: 'Đặt buổi', cancelled: 'Hủy', rescheduled: 'Dời đi', no_show: 'Vắng mặt' };
 const RULES = {
@@ -379,12 +394,13 @@ const RULES = {
   lesson_not_started: 'Buổi chưa bắt đầu, hãy hủy thay vì ghi vắng mặt',
   tutor_not_found: 'Không tìm thấy gia sư',
 };
-const SOFT_RULES = ['closed_on_monday', 'max_6_lessons_per_tutor_per_day'];
 const FOUR_HOURS_MS = 4 * 3600 * 1000;
 
 let ref = null;
-let week = [];      // seven DaySchedule objects, Monday first
-let current = null; // lesson the open dialog acts on
+let dayDate = null;   // date shown in "Hôm nay"
+let weekDate = null;  // any date inside the week shown in "Lịch gia sư"
+let shown = new Map(); // lessonId -> { lesson, day } for whatever grid is on screen
+let current = null;   // lesson the open dialog acts on
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // The API always returns center time (+07:00), so the wall-clock part is read straight from the string.
@@ -393,9 +409,11 @@ const minutesOfDay = (iso) => Number(iso.slice(11, 13)) * 60 + Number(iso.slice(
 const ddmm = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`;
 const dow = (iso) => new Date(iso.slice(0, 10) + 'T12:00').getDay();
 const WEEKDAYS = ['CN', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+const LONG_WEEKDAYS = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
 const shortDay = (iso) => `${WEEKDAYS[dow(iso)]} ${ddmm(iso)}`;
 const addDays = (isoDate, n) => { const d = new Date(isoDate + 'T12:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
 const mondayOf = (isoDate) => addDays(isoDate, -((dow(isoDate) + 6) % 7));
+const holdsSlot = (l) => l.status === 'booked' || l.status === 'no_show';
 
 async function api(method, path, body) {
   const res = await fetch(path, {
@@ -431,61 +449,57 @@ function options(items, value, label, selected) {
 }
 
 /* ---------------- routing ---------------- */
-let anchorDate = null; // any date inside the shown week
+const VIEWS = ['today', 'tutor', 'book'];
+const currentView = () => (VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'today');
 
 function showView() {
-  const view = location.hash === '#book' ? 'book' : 'schedule';
-  $('view-schedule').classList.toggle('hidden', view !== 'schedule');
-  $('view-book').classList.toggle('hidden', view !== 'book');
+  const view = currentView();
+  VIEWS.forEach((v) => $(`view-${v}`).classList.toggle('hidden', v !== view));
   document.querySelectorAll('.nav a').forEach((a) => a.classList.toggle('active', a.dataset.view === view));
   $('app').classList.remove('nav-open');
+  if (view === 'today') loadToday();
+  if (view === 'tutor') loadWeek();
   if (view === 'book') $('bTutor').value = $('tutor').value;
 }
 
-function scheduleUrl() {
-  return `${location.origin}${location.pathname}?tutor=${encodeURIComponent($('tutor').value)}&date=${anchorDate}`;
+function tutorLink() {
+  return `${location.origin}${location.pathname}?tutor=${encodeURIComponent($('tutor').value)}&date=${weekDate}#tutor`;
 }
 
-/* ---------------- week schedule ---------------- */
-async function loadWeek() {
-  history.replaceState(null, '', scheduleUrl().slice(location.origin.length) + location.hash);
-  const monday = mondayOf(anchorDate);
-  const dates = [...Array(7)].map((_, i) => addDays(monday, i));
-  $('weekLabel').textContent = `${ddmm(dates[0])} – ${ddmm(dates[6])}/${dates[6].slice(0, 4)}`;
-  try {
-    // The API is per day, so a week is seven parallel requests.
-    week = await Promise.all(dates.map((d) =>
-      api('GET', `/tutors/${encodeURIComponent($('tutor').value)}/schedule?date=${d}`)));
-  } catch (e) {
-    toast(false, explain(e));
-    return;
-  }
-  renderWeek();
+async function reloadCurrent() {
+  if (currentView() === 'today') await loadToday();
+  if (currentView() === 'tutor') await loadWeek();
 }
 
-function renderWeek() {
-  const today = ref.now.slice(0, 10);
-  const changedCount = week.reduce((n, d) => n + d.changedAfterLock.length, 0);
-  $('notice').innerHTML = changedCount
-    ? `<div class="notice">${icon('alert')}${changedCount} buổi trong tuần đã đổi sau giờ chốt 16:00 (chấm cam). Hãy báo lại gia sư.</div>` : '';
+/* ---------------- shared time grid ---------------- */
+/**
+ * Draws a time grid with one column per entry of `columns` ({ title, sub, cls, lessons, day }).
+ * `hourPx` decides the height; `label(lesson)` returns the lines shown inside a block.
+ */
+function renderGrid(el, columns, hourPx, label, firstColWidth = 56) {
+  const all = columns.flatMap((c) => c.lessons);
+  const startHour = Math.min(DEFAULT_START_HOUR, ...all.map((l) => Math.floor(minutesOfDay(l.startsAt) / 60)));
+  const endHour = Math.max(DEFAULT_END_HOUR, ...all.map((l) => Math.ceil(minutesOfDay(l.endsAt) / 60)));
+  const height = (endHour - startHour) * hourPx;
+  const nowDate = ref.now.slice(0, 10);
+  const nowTop = ((minutesOfDay(ref.now) - startHour * 60) / 60) * hourPx;
 
-  const head = ['<div class="cal-head"><div></div>', ...week.map((d) => `<div class="${d.date === today ? 'today' : ''}">
-      <span class="num">${Number(d.date.slice(8, 10))}</span><span class="dow">${WEEKDAYS[dow(d.date)]}</span>
-      <span class="lock">${d.locked ? `${icon('lock')}đã chốt` : ''}</span></div>`), '</div>'].join('');
-
+  el.style.gridTemplateColumns = `${firstColWidth}px repeat(${columns.length}, minmax(100px, 1fr))`;
+  const head = '<div class="cal-head"><div></div>' +
+    columns.map((c) => `<div class="${c.headCls || ''}">${c.head}</div>`).join('') + '</div>';
   const hours = [];
-  for (let h = GRID_START_HOUR; h < GRID_END_HOUR; h++) hours.push(`<div>${String(h).padStart(2, '0')}:00</div>`);
-  const times = `<div class="times">${hours.join('')}</div>`;
-
-  const height = (GRID_END_HOUR - GRID_START_HOUR) * HOUR_PX;
-  const cols = week.map((d) => {
-    const changed = new Set(d.changedAfterLock);
-    const closed = dow(d.date) === 1 ? 'closed' : '';
-    return `<div class="col ${closed} ${d.date === today ? 'today' : ''}" style="height:${height}px">
-      ${layoutLanes(d.lessons).map(({ lesson, lane, lanes }) => block(lesson, lane, lanes, changed.has(lesson.lessonId))).join('')}</div>`;
+  for (let h = startHour; h < endHour; h++) hours.push(`<div style="height:${hourPx}px">${String(h).padStart(2, '0')}:00</div>`);
+  let nowDrawn = false;
+  const cols = columns.map((c) => {
+    const changed = new Set(c.day.changedAfterLock);
+    const showNow = c.day.date === nowDate && nowTop >= 0 && nowTop <= height;
+    const nowLine = showNow ? `<div class="now-line ${nowDrawn ? '' : 'first'}" style="top:${nowTop}px"></div>` : '';
+    nowDrawn ||= showNow;
+    return `<div class="col ${c.cls || ''}" style="height:${height}px;background-size:100% ${hourPx}px">${nowLine}
+      ${layoutLanes(c.lessons).map(({ lesson, lane, lanes }) =>
+        block(lesson, lane, lanes, changed.has(lesson.lessonId), startHour, hourPx, label)).join('')}</div>`;
   }).join('');
-
-  $('cal').innerHTML = head + times + cols;
+  el.innerHTML = head + `<div class="times">${hours.join('')}</div>` + cols;
 }
 
 /**
@@ -518,35 +532,95 @@ function layoutLanes(lessons) {
   return out;
 }
 
-function block(l, lane, lanes, changed) {
-  const startMin = minutesOfDay(l.startsAt) - GRID_START_HOUR * 60;
+function block(l, lane, lanes, changed, startHour, hourPx, label) {
+  const startMin = minutesOfDay(l.startsAt) - startHour * 60;
   const minutes = (new Date(l.endsAt) - new Date(l.startsAt)) / 60000;
-  const top = (startMin / 60) * HOUR_PX + 2;
-  const h = (minutes / 60) * HOUR_PX - 4;
+  const top = (startMin / 60) * hourPx + 1;
+  const h = (minutes / 60) * hourPx - 3;
   const width = 100 / lanes;
   const cls = l.status === 'cancelled' || l.status === 'rescheduled' ? 'inactive' : l.status === 'no_show' ? 'noshow' : '';
   const past = l.endsAt <= ref.now ? 'past' : '';
+  // Show only as many lines as fit in the block.
+  const lines = label(l).slice(0, Math.max(1, Math.floor((h - 4) / LINE_PX)));
   return `<button type="button" class="lesson ${cls} ${past} ${changed ? 'changed' : ''}" data-id="${l.lessonId}"
-      style="top:${top}px;height:${h}px;left:calc(${lane * width}% + 4px);width:calc(${width}% - 8px)"
-      title="${esc(l.studentName)} · ${hhmm(l.startsAt)}–${hhmm(l.endsAt)} · Phòng ${esc(l.roomId)}">
-      <span class="t">${hhmm(l.startsAt)} - ${hhmm(l.endsAt)}</span>
-      <span class="n">${esc(l.studentName)}</span>
-      <span class="r">Phòng ${esc(l.roomId)}</span>
-    </button>`;
+      style="top:${top}px;height:${h}px;left:calc(${lane * width}% + 3px);width:calc(${width}% - 6px)"
+      title="${esc(l.studentName)} · ${hhmm(l.startsAt)}–${hhmm(l.endsAt)} · ${esc(l.tutorName)} · Phòng ${esc(l.roomId)}">
+      ${lines.join('')}</button>`;
 }
 
-function findLesson(id) {
-  for (const d of week) {
-    const l = d.lessons.find((x) => x.lessonId === id);
-    if (l) return { lesson: l, day: d };
-  }
-  return {};
+function remember(days) {
+  shown = new Map();
+  days.forEach((day) => day.lessons.forEach((lesson) => shown.set(lesson.lessonId, { lesson, day })));
 }
 
-$('cal').addEventListener('click', (e) => {
+function summaryHtml(days, { countTutors }) {
+  const lessons = days.flatMap((d) => d.lessons);
+  const changed = days.reduce((n, d) => n + d.changedAfterLock.length, 0);
+  const parts = [`<span><b>${lessons.filter((l) => l.status === 'booked').length}</b>buổi đã đặt</span>`];
+  if (countTutors) parts.push(`<span><b>${new Set(lessons.filter(holdsSlot).map((l) => l.tutorId)).size}</b>gia sư</span>`);
+  parts.push(`<span><b>${lessons.filter((l) => l.status === 'cancelled' || l.status === 'rescheduled').length}</b>hủy / dời</span>`);
+  if (changed) parts.push(`<span class="warn">${icon('alert')}${changed} buổi đổi sau giờ chốt 16:00, cần báo lại gia sư</span>`);
+  return parts.join('');
+}
+
+/* ---------------- Hôm nay: the centre, rooms x hours ---------------- */
+// Fit the whole day in the window: the owner wants to "see today. Not scroll."
+// 215px is the page chrome around the grid (title, summary, column headers, legend).
+const fittedHourPx = () => Math.max(34, Math.min(64, Math.floor((window.innerHeight - 215) / (DEFAULT_END_HOUR - DEFAULT_START_HOUR))));
+
+async function loadToday() {
+  history.replaceState(null, '', `${location.pathname}?date=${dayDate}#today`);
+  $('todayTitle').textContent = dayDate === ref.now.slice(0, 10) ? 'Hôm nay' : LONG_WEEKDAYS[dow(dayDate)];
+  $('dayLabel').textContent = `${LONG_WEEKDAYS[dow(dayDate)]}, ${ddmm(dayDate)}/${dayDate.slice(0, 4)}`;
+  let day;
+  try {
+    day = await api('GET', `/schedule?date=${dayDate}`);
+  } catch (e) { toast(false, explain(e)); return; }
+  remember([day]);
+  $('daySummary').innerHTML = (day.locked ? `<span>${icon('lock')} Đã chốt ${hhmm(day.lockedAt)} ${shortDay(day.lockedAt)}</span>` : '')
+    + summaryHtml([day], { countTutors: true });
+  const closed = dow(day.date) === 1 ? 'closed' : '';
+  const columns = ref.rooms.map((room) => ({
+    head: `<span class="title">Phòng ${esc(room)}</span>`,
+    cls: closed, day, lessons: day.lessons.filter((l) => l.roomId === room),
+  }));
+  renderGrid($('roomGrid'), columns, fittedHourPx(), (l) => [
+    `<span class="n">${esc(l.studentName)}</span>`,
+    `<span class="m">${hhmm(l.startsAt)}–${hhmm(l.endsAt)} · ${esc(l.tutorName)}</span>`,
+  ]);
+}
+
+/* ---------------- Lịch gia sư: one tutor's week ---------------- */
+async function loadWeek() {
+  history.replaceState(null, '', tutorLink().slice(location.origin.length));
+  const monday = mondayOf(weekDate);
+  const dates = [...Array(7)].map((_, i) => addDays(monday, i));
+  $('weekLabel').textContent = `${ddmm(dates[0])} – ${ddmm(dates[6])}/${dates[6].slice(0, 4)}`;
+  let week;
+  try {
+    // The API is per day, so a week is seven parallel requests.
+    week = await Promise.all(dates.map((d) => api('GET', `/tutors/${encodeURIComponent($('tutor').value)}/schedule?date=${d}`)));
+  } catch (e) { toast(false, explain(e)); return; }
+  remember(week);
+  $('weekSummary').innerHTML = summaryHtml(week, { countTutors: false });
+  const today = ref.now.slice(0, 10);
+  const columns = week.map((day) => ({
+    head: `<span class="num">${Number(day.date.slice(8, 10))}</span><span class="sub">${WEEKDAYS[dow(day.date)]}${day.locked ? ' · đã chốt' : ''}</span>`,
+    headCls: day.date === today ? 'today' : '',
+    cls: [dow(day.date) === 1 ? 'closed' : '', day.date === today ? 'today' : ''].join(' '),
+    day, lessons: day.lessons,
+  }));
+  renderGrid($('weekGrid'), columns, 52, (l) => [
+    `<span class="m">${hhmm(l.startsAt)} - ${hhmm(l.endsAt)}</span>`,
+    `<span class="n">${esc(l.studentName)}</span>`,
+    `<span class="s">Phòng ${esc(l.roomId)}</span>`,
+  ]);
+}
+
+['roomGrid', 'weekGrid'].forEach((id) => $(id).addEventListener('click', (e) => {
   const b = e.target.closest('.lesson');
   if (b) openDetail(Number(b.dataset.id));
-});
+}));
 
 /* ---------------- detail dialog ---------------- */
 function statusBadge(l) {
@@ -557,12 +631,12 @@ function statusBadge(l) {
 }
 
 function openDetail(id) {
-  const { lesson: l, day } = findLesson(id);
+  const { lesson: l, day } = shown.get(id) || {};
   if (!l) return;
   current = l;
   $('dName').textContent = l.studentName;
   $('dWhen').textContent = `${shortDay(l.startsAt)} · ${hhmm(l.startsAt)}–${hhmm(l.endsAt)} · Phòng ${l.roomId}`;
-  const facts = [['Trạng thái', statusBadge(l)]];
+  const facts = [['Trạng thái', statusBadge(l)], ['Gia sư', `${esc(l.tutorName)} (${esc(l.tutorId)})`]];
   if (l.replacedByLessonId) facts.push(['Dời sang', `<a href="#" data-goto="${l.replacedByStartsAt.slice(0, 10)}">${shortDay(l.replacedByStartsAt)} ${hhmm(l.replacedByStartsAt)}</a>`]);
   if (l.replacesLessonId) facts.push(['Dời từ', `buổi #${l.replacesLessonId}`]);
   if (l.externalRef) facts.push(['Mã sheet', esc(l.externalRef)]);
@@ -589,8 +663,8 @@ $('dFacts').addEventListener('click', (e) => {
   if (!go) return;
   e.preventDefault();
   $('dlgDetail').close();
-  anchorDate = go.dataset.goto;
-  loadWeek();
+  dayDate = weekDate = go.dataset.goto;
+  reloadCurrent();
 });
 
 $('detailForm').addEventListener('submit', (e) => {
@@ -623,8 +697,6 @@ function openMove(who) {
   $('moveStart').value = current.startsAt.slice(0, 16);
   $('moveRoom').innerHTML = options(ref.rooms, (r) => r, (r) => `Phòng ${r}`, current.roomId);
   $('moveReason').value = '';
-  $('moveOverride').value = '';
-  $('moveOverrideField').classList.add('hidden');
   $('moveMsg').innerHTML = '';
   $('dlgMove').showModal();
 }
@@ -639,7 +711,7 @@ function onConfirm(formId, dialogId, run) {
     try {
       await run();
       $(dialogId).close();
-      await loadWeek();
+      await reloadCurrent();
     } finally {
       buttons.forEach((b) => (b.disabled = false));
     }
@@ -662,12 +734,10 @@ onConfirm('moveForm', 'dlgMove', async () => {
       startsAt: $('moveStart').value,
       roomId: $('moveRoom').value,
       reason: $('moveReason').value.trim() || null,
-      overrideReason: $('moveOverride').value.trim() || null,
     });
     toast(true, `Đã dời sang <b>${shortDay(moved.startsAt)} ${hhmm(moved.startsAt)}</b>, phòng ${esc(moved.roomId)}.`);
-    anchorDate = moved.startsAt.slice(0, 10);
+    dayDate = weekDate = moved.startsAt.slice(0, 10);
   } catch (err) {
-    if (SOFT_RULES.includes(err.problem?.rule)) $('moveOverrideField').classList.remove('hidden');
     $('moveMsg').innerHTML = callout('red', 'circle-x', explain(err));
     throw err;
   }
@@ -698,22 +768,15 @@ $('bookForm').addEventListener('submit', async (e) => {
       roomId: $('bRoom').value,
       startsAt: $('bStart').value,
       durationMin: Number($('bDuration').value),
-      overrideReason: $('bOverride').value.trim() || null,
     });
     $('bookMsg').innerHTML = '';
-    $('bOverride').value = '';
-    $('bOverrideField').classList.add('hidden');
     toast(true, `Đã đặt buổi <b>${shortDay(l.startsAt)} ${hhmm(l.startsAt)}</b>, phòng ${esc(l.roomId)}.`);
-    // Jump to the tutor's week so the new lesson is visible in context.
+    // Show the new lesson in context: the centre's day it falls on.
+    dayDate = weekDate = l.startsAt.slice(0, 10);
     $('tutor').value = l.tutorId;
-    anchorDate = l.startsAt.slice(0, 10);
-    location.hash = '#schedule';
-    await loadWeek();
+    location.hash = '#today';
   } catch (err) {
-    const soft = SOFT_RULES.includes(err.problem?.rule);
-    if (soft) $('bOverrideField').classList.remove('hidden');
-    $('bookMsg').innerHTML = callout(soft ? 'amber' : 'red', soft ? 'alert' : 'circle-x',
-      explain(err) + (soft ? '. Nhập lý do vượt luật để đặt dù vậy.' : ''));
+    $('bookMsg').innerHTML = callout('red', 'circle-x', explain(err));
   } finally {
     $('bookSubmit').disabled = false;
   }
@@ -724,28 +787,33 @@ async function init() {
   ref = await api('GET', '/reference');
   $('nowText').textContent = `Giờ giả lập: ${hhmm(ref.now)} ${shortDay(ref.now)}`;
   const tutorLabel = (t) => `${t.name} · ${t.subject}`;
-  // ?tutor=T1&date=2026-03-05 opens one tutor's week directly: the one link Mai sends instead of messages.
+  // ?tutor=T1&date=2026-03-05#tutor opens one tutor's week: the one link Mai sends instead of messages.
   const params = new URLSearchParams(location.search);
   const tutorParam = ref.tutors.some((t) => t.id === params.get('tutor')) ? params.get('tutor') : ref.tutors[0]?.id;
   $('tutor').innerHTML = options(ref.tutors, (t) => t.id, tutorLabel, tutorParam);
   $('bTutor').innerHTML = options(ref.tutors, (t) => t.id, tutorLabel, tutorParam);
   $('bRoom').innerHTML = options(ref.rooms, (r) => r, (r) => `Phòng ${r}`);
   $('bStudent').innerHTML = options(ref.students, (s) => String(s.id), (s) => s.fullName);
-  anchorDate = /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') || '') ? params.get('date') : ref.now.slice(0, 10);
+  dayDate = weekDate = /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') || '') ? params.get('date') : ref.now.slice(0, 10);
+  if (params.get('tutor') && !location.hash) history.replaceState(null, '', location.search + '#tutor');
   $('bStart').value = ref.now.slice(0, 10) + 'T16:00';
 
+  $('prevDay').addEventListener('click', () => { dayDate = addDays(dayDate, -1); loadToday(); });
+  $('nextDay').addEventListener('click', () => { dayDate = addDays(dayDate, 1); loadToday(); });
+  $('goToday').addEventListener('click', () => { dayDate = ref.now.slice(0, 10); loadToday(); });
   $('tutor').addEventListener('change', loadWeek);
-  $('prevWeek').addEventListener('click', () => { anchorDate = addDays(mondayOf(anchorDate), -7); loadWeek(); });
-  $('nextWeek').addEventListener('click', () => { anchorDate = addDays(mondayOf(anchorDate), 7); loadWeek(); });
+  $('prevWeek').addEventListener('click', () => { weekDate = addDays(mondayOf(weekDate), -7); loadWeek(); });
+  $('nextWeek').addEventListener('click', () => { weekDate = addDays(mondayOf(weekDate), 7); loadWeek(); });
   $('copyLink').addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(scheduleUrl()); toast(true, 'Đã sao chép link lịch để gửi gia sư.'); }
-    catch { toast(false, 'Không sao chép được: ' + esc(scheduleUrl())); }
+    try { await navigator.clipboard.writeText(tutorLink()); toast(true, 'Đã sao chép link lịch để gửi gia sư.'); }
+    catch { toast(false, 'Không sao chép được: ' + esc(tutorLink())); }
   });
   document.querySelector('[data-open-nav]').addEventListener('click', () => $('app').classList.add('nav-open'));
   document.querySelector('[data-close-nav]').addEventListener('click', () => $('app').classList.remove('nav-open'));
   window.addEventListener('hashchange', showView);
+  let resizeTimer;
+  window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => currentView() === 'today' && loadToday(), 200); });
   showView();
-  await loadWeek();
 }
 
 init().catch((e) => toast(false, 'Không kết nối được API: ' + esc(e.message)));
