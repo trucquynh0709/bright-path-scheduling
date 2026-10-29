@@ -11,3 +11,11 @@ spring:
 server:
   # 8080 is commonly taken on dev machines; override with PORT if needed
   port: ${PORT:8081}
+
+app:
+  # Simulated "now": Thursday of the seed week, before the 16:00 lock for Friday.
+  # Set APP_NOW to another ISO timestamp, or to an empty string for the real clock.
+  now: ${APP_NOW:2026-03-05T14:00:00+07:00}
+  seed:
+    enabled: true
+    dir: data
