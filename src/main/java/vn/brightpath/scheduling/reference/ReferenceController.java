@@ -14,7 +14,8 @@ import vn.brightpath.scheduling.lesson.CenterRules;
 @RestController
 public class ReferenceController {
 
-    public record Tutor(String id, String name, String subject) {
+    /** phone is shown so Mai can call a tutor about a change made after the 16:00 cut-off. */
+    public record Tutor(String id, String name, String subject, String phone) {
     }
 
     public record Student(long id, String fullName) {
@@ -35,8 +36,9 @@ public class ReferenceController {
     public Reference reference() {
         return new Reference(
                 clock.instant().atZone(CenterRules.CENTER_ZONE).toOffsetDateTime(),
-                jdbc.query("SELECT id, name, subject FROM tutor ORDER BY id",
-                        (rs, i) -> new Tutor(rs.getString("id"), rs.getString("name"), rs.getString("subject"))),
+                jdbc.query("SELECT id, name, subject, phone FROM tutor ORDER BY id",
+                        (rs, i) -> new Tutor(rs.getString("id"), rs.getString("name"), rs.getString("subject"),
+                                rs.getString("phone"))),
                 jdbc.queryForList("SELECT id FROM room ORDER BY id", String.class),
                 jdbc.query("SELECT id, full_name FROM student ORDER BY full_name",
                         (rs, i) -> new Student(rs.getLong("id"), rs.getString("full_name"))));
