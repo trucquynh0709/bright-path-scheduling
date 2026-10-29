@@ -93,6 +93,11 @@ public class SeedImporter implements ApplicationRunner {
                 if (day.getDayOfWeek() == CenterRules.CLOSED_DAY) {
                     issues.add(CenterRules.RULE_CLOSED_ON_MONDAY + ": lesson on " + day);
                 }
+                LocalTime startTime = LocalTime.parse(row.get("start_time"));
+                int minutes = Integer.parseInt(row.get("duration_min"));
+                if (!CenterRules.isWithinOpeningHours(startTime, minutes)) {
+                    issues.add(CenterRules.RULE_OPENING_HOURS + ": " + startTime + " for " + minutes + " min");
+                }
                 int sameDay = lessons.countTutorLessonsOn(tutorId, day);
                 if (sameDay >= CenterRules.MAX_LESSONS_PER_TUTOR_PER_DAY) {
                     issues.add(CenterRules.RULE_MAX_PER_DAY + ": " + tutorId + " already has " + sameDay + " on " + day);

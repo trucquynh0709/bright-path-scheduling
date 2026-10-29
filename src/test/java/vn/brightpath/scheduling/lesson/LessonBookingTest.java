@@ -99,7 +99,7 @@ class LessonBookingTest {
     @Test
     void seventhLessonForATutorIsRejected() {
         // T1 already has 7 lessons on Fri 2026-03-06 in the export; the owner wants the limit enforced
-        assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T1", "R5", "2026-03-06T07:00", 60)))
+        assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T1", "R5", "2026-03-06T10:00", 60)))
                 .isInstanceOfSatisfying(RuleViolationException.class, e -> {
                     assertThat(e.status()).isEqualTo(HttpStatus.UNPROCESSABLE_CONTENT);
                     assertThat(e.rule()).isEqualTo(CenterRules.RULE_MAX_PER_DAY);
@@ -117,6 +117,18 @@ class LessonBookingTest {
         assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T2", "R4", "2026-03-09T09:00", 60)))
                 .isInstanceOfSatisfying(RuleViolationException.class,
                         e -> assertThat(e.rule()).isEqualTo(CenterRules.RULE_CLOSED_ON_MONDAY));
+    }
+
+    @Test
+    void lessonsMustFitInsideOpeningHours() {
+        // 09:00-21:30, taken from the export; 08:00 starts too early, 21:00 for 60 min ends too late
+        for (String startsAt : new String[] {"2026-03-07T08:00", "2026-03-07T21:00"}) {
+            assertThatThrownBy(() -> service.book(request(DO_VAN_KIEN, "T2", "R4", startsAt, 60)))
+                    .isInstanceOfSatisfying(RuleViolationException.class,
+                            e -> assertThat(e.rule()).isEqualTo(CenterRules.RULE_OPENING_HOURS));
+        }
+        // The last lesson the centre really runs (20:30-21:30, like L027) is still allowed
+        assertThat(service.book(request(DO_VAN_KIEN, "T2", "R4", "2026-03-07T20:30", 60)).status()).isEqualTo("booked");
     }
 
     @Test

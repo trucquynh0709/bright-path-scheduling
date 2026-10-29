@@ -114,6 +114,11 @@ public class LessonService {
             throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, CenterRules.RULE_CLOSED_ON_MONDAY,
                     "The centre is closed on Monday, when the rooms are cleaned");
         }
+        if (!CenterRules.isWithinOpeningHours(req.startsAt().toLocalTime(), req.durationMin())) {
+            throw new RuleViolationException(HttpStatus.UNPROCESSABLE_CONTENT, CenterRules.RULE_OPENING_HOURS,
+                    "Lessons run " + CenterRules.OPENS_AT + "-" + CenterRules.CLOSES_AT + "; this one would run "
+                            + req.startsAt().toLocalTime() + "-" + req.startsAt().toLocalTime().plusMinutes(req.durationMin()));
+        }
 
         // Locking the tutor row serialises bookings per tutor, so two receptionists booking the
         // same tutor at once cannot both see "5 lessons today" and push the tutor to 7.
