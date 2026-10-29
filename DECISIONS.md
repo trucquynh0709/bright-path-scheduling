@@ -25,7 +25,7 @@
 2. **When the *tutor* cancels inside 4h (L017, "tutor sick"), does the family pay?** The rule assumes the family cancels. If not, I add `cancelled_by`, and the fee applies to family cancellations only.
 3. **Is a move inside 4h a late cancel?** It is free today, which is a loophole. If yes, the reschedule records the fee on the original lesson.
 4. **How do tutors get their day today, and will they open a link?** This decides the notification channel, which is the next feature.
-5. **What are the exact opening hours?** "Mid-morning to mid-evening" is too vague to enforce. A real rule would be one more check at booking time.
+5. **What are the exact opening hours?** "Mid-morning to mid-evening" is too vague to enforce literally. I enforce 09:00–21:30, the range the export actually ran. The owner's answer changes two constants in `CenterRules`.
 6. **Is a student's name unique?** The export has no ID, so the name is the identity.
 
 **Where the brief argues with itself, and the reading I chose:**
@@ -39,7 +39,7 @@
 **Assumptions I invented:**
 - All times are centre time (Asia/Ho_Chi_Minh).
 - A lesson's cut-off is 16:00 the day before it.
-- The UI shows 09:00–22:00. Opening hours are not enforced.
+- Opening hours are 09:00–21:30: the earliest start and latest end in the export (L027 ends 21:30).
 - The seed is history to keep, not requests to validate.
 
 ## 2. Choosing what to build
@@ -87,7 +87,7 @@ import_issue(external_ref, rule, detail)
 |---|---|---|
 | No overlap for the same student, tutor or room | **DB**: `EXCLUDE USING gist` on `tstzrange(starts_at, ends_at)` for `booked` and `no_show` rows | The owner's never-again rule. It must hold under concurrent requests, code bugs and manual SQL. A cancel or move frees the slot; a no-show does not. |
 | 60 or 90 min; valid status; `late_cancel` exactly when cancelled; one replacement per lesson; append-only history | **DB**: CHECK, UNIQUE, trigger | Row invariants, cheap to state. |
-| Closed Monday; max 6 per tutor per day | **Code** (`LessonService`), no override | A day-of-week and a per-day count. The tutor row is locked `FOR UPDATE`, so two bookings cannot both see "5". They stay out of the DB so the real export (L027, L032) still imports. |
+| Closed Monday; opening hours 09:00–21:30; max 6 per tutor per day | **Code** (`LessonService`), no override | A day-of-week, a time window and a per-day count. The tutor row is locked `FOR UPDATE`, so two bookings cannot both see "5". They stay out of the DB so the real export (L027, L032) still imports, and so the assumed hours can change without a migration. |
 | Not in the past; 4h fee; cut-off flag; started lessons can only be no-shows | **Code** | They depend on "now", which is an injected `Clock`. |
 
 **Dirty seed.**
@@ -122,7 +122,7 @@ import_issue(external_ref, rule, detail)
 - **Only cancellations have history in the import**, because the export has no other timestamps.
 - **`revision` counts changes; it cannot tell whether a tutor saw them.**
 - **No auth**, and no record of *who* made a change.
-- **No opening-hours check.**
+- **Opening hours are my assumption** (09:00–21:30), not a stated rule.
 - **On a concurrent clash, the 409 names only the rule**, not the other lesson.
 
 **Where the AI helped.** I used Claude Code throughout.

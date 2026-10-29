@@ -47,7 +47,7 @@ Then restart the app.
 ```
 The tests start their own throwaway Postgres (Testcontainers), import the real seed into it and leave the dev database untouched. Docker must be running.
 ```
-Tests run: 29, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 30, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 ## UI
@@ -89,11 +89,13 @@ curl -s -X POST localhost:8081/lessons -H 'Content-Type: application/json' \
 {"detail":"Clashes with an existing lesson (no_student_double_booking)","instance":"/lessons","status":409,"title":"Request rejected by center rules","rule":"no_student_double_booking","details":[{"rule":"no_student_double_booking","lessonId":19,"externalRef":"L019"}]}
 ```
 
-**Monday and the 6-per-day limit are hard rules.** A Monday booking, and a booking for T1 on Friday:
+**Monday, the 6-per-day limit and opening hours are hard rules.** Three bookings, in order: one on a Monday, one for T1 on Friday at 10:00, and one on Saturday at 21:00 for 60 minutes:
 ```json
 {"detail":"The centre is closed on Monday, when the rooms are cleaned","instance":"/lessons","status":422,"title":"Request rejected by center rules","rule":"closed_on_monday"}
 {"detail":"Tutor T1 already has 7 lessons on 2026-03-06","instance":"/lessons","status":422,"title":"Request rejected by center rules","rule":"max_6_lessons_per_tutor_per_day"}
+{"detail":"Lessons run 09:00-21:30; this one would run 21:00-22:00","instance":"/lessons","status":422,"title":"Request rejected by center rules","rule":"outside_opening_hours"}
 ```
+Opening hours are 09:00–21:30. The brief only says "mid-morning to mid-evening", so these are the earliest start and latest end the export actually ran.
 (T1 already has 7 because the export really ran 7. Imported history is kept as it was.)
 
 **Late cancel.** L016 is today at 14:30, 30 minutes from now. It is charged and its slot is freed:
