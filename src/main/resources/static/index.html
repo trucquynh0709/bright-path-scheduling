@@ -339,7 +339,7 @@
             <div class="field"><label for="bDuration">Thời lượng</label>
               <select class="input" id="bDuration"><option value="60">60 phút</option><option value="90">90 phút</option></select></div>
           </div>
-          <p class="hint" style="margin:0">Không nhận: trùng học sinh, gia sư hoặc phòng; Thứ Hai; gia sư đã đủ 6 buổi trong ngày.</p>
+          <p class="hint" style="margin:0">Không nhận: trùng học sinh, gia sư hoặc phòng; Thứ Hai; ngoài giờ 09:00–21:30; gia sư đã đủ 6 buổi trong ngày.</p>
           <div id="bookMsg"></div>
           <div class="form-foot">
             <a class="btn" href="#today">Hủy bỏ</a>
@@ -435,8 +435,8 @@
 const $ = (id) => document.getElementById(id);
 const icon = (name) => `<svg class="i"><use href="#i-${name}"/></svg>`;
 
-// Default visible hours (center time); the grid widens if a lesson falls outside them.
-// The brief says lessons run "mid-morning to mid-evening"; the seed runs 09:00 to 21:30.
+// Visible hours (center time): opening hours 09:00-21:30 (CenterRules.OPENS_AT / CLOSES_AT),
+// rounded out to whole hours. The grid still widens if an imported lesson falls outside them.
 const DEFAULT_START_HOUR = 9;
 const DEFAULT_END_HOUR = 22;
 const TRACK_PX = 40; // height of one room track in the today view, keep in sync with .g-track
@@ -449,6 +449,7 @@ const RULES = {
   no_room_double_booking: 'Phòng đã có buổi khác vào giờ này',
   closed_on_monday: 'Trung tâm nghỉ Thứ Hai',
   max_6_lessons_per_tutor_per_day: 'Gia sư đã đủ 6 buổi trong ngày',
+  outside_opening_hours: 'Ngoài giờ học (09:00–21:30)',
   booking_in_the_past: 'Không đặt được buổi trong quá khứ',
   lesson_duration_60_or_90: 'Buổi học chỉ 60 hoặc 90 phút',
   lesson_not_booked: 'Buổi này không còn ở trạng thái đã đặt',
