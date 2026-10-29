@@ -133,14 +133,14 @@ import_issue(external_ref, rule, detail)
 **A suggestion I threw away.**
 - **What it proposed:** the AI suggested letting Mai override Monday and the 6-per-day limit with a written reason, "because she breaks them when stuck". I first accepted that.
 - **Why I dropped it:** re-reading the original brief, it says the owner *wants the limit enforced*. An override sides with the workaround the owner is trying to end, so I made both hard rules (`1d7a677`).
-- **Why that is right:** the cost is that Mai will sometimes hear "no". That is the owner's call, and it is now visible in Q1 and §2 rather than hidden in a reason field.
+- **Why that is right:** the cost is that Mai will sometimes hear "no". That is the owner's call, and it is now stated in §1 ("where the brief argues with itself") rather than hidden in a reason field.
 - **A smaller case:** the AI once produced a test that asserted nothing, and I replaced it with two real ones (cancel frees the slot, no-show keeps it).
 
 **Time.**
 - **Inside the 2.5h box:** setup to the first DECISIONS draft, about 16:30–17:51 and 20:50–21:44.
 - **After it, in separate commits** from `9adf4b4` on:
   - the UI and its restyles;
-  - the centre "today" view (`0a2bc58`, `3622e43`);
-  - the hard-rule correction (`1d7a677`), made after I re-read the original brief.
+  - the centre "today" endpoint and screen (`0a2bc58`, `3622e43`, `ae25163`, `0590951`);
+  - two corrections made after I re-read the original brief: Monday and 6-per-day as hard rules (`1d7a677`), and opening hours (`e6ea5a8`).
 
   You can judge the timeboxed work on its own by reading up to `94904a4`.
