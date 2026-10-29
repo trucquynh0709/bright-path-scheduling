@@ -32,3 +32,6 @@ Thumbs.db
 !.env.example
 application-local.yml
 application-local.properties
+
+# Spring Initializr leftovers
+HELP.md
