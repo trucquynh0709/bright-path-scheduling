@@ -46,14 +46,15 @@ docker compose exec db psql -U brightpath -c "DROP SCHEMA public CASCADE; CREATE
 ```
 The tests start their own throwaway Postgres (Testcontainers), import the real seed into it and leave the dev database untouched. Docker must be running.
 ```
-Tests run: 24, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 ## UI
 Open **http://localhost:8081/**: a single page for Mai and tutors (Vietnamese labels).
-- Pick a tutor and a day to see every lesson. Cancelled and moved lessons stay visible. Lessons changed after the 16:00 lock are highlighted, and the revision number is shown.
-- Cancel, reschedule or mark a no-show from each lesson; each opens a dialog that explains the consequence (for example "within 4h: still charged") and keeps any rule error inside the dialog. Book from "Đặt buổi học" in the sidebar. If a soft rule (Monday, more than 6 per day) blocks a booking, a reason field appears.
-- `http://localhost:8081/?tutor=T1&date=2026-03-05` opens one tutor's day directly. That is the link to send a tutor instead of a chain of messages.
+- **Week calendar per tutor** (Monday to Sunday, 08:00–22:00). Each lesson is a block placed at its real time and length. The colour bar shows its status: green booked, grey cancelled or moved, amber no-show. An amber dot marks a lesson changed after the 16:00 lock, and a banner counts them. Monday is shaded as closed. Overlapping imported lessons sit side by side.
+- **Click a block** for its details and full change history. Actions follow the server rules: an upcoming lesson can be moved or cancelled; a started one can only be marked as a no-show. Each action opens a dialog that explains the consequence (for example "within 4h: still charged") and keeps any rule error inside the dialog.
+- **Book** from "Đặt buổi học" in the sidebar. If a soft rule (Monday, more than 6 per day) blocks a booking, a reason field appears.
+- `http://localhost:8081/?tutor=T1&date=2026-03-05` opens one tutor's week directly. That is the link to send a tutor instead of a chain of messages.
 
 It is plain HTML, CSS and JS in `src/main/resources/static/index.html`, with lucide icons inlined as SVG, no build step and no external requests. Changes to the file need an app restart, because `spring-boot:run` serves the copy in `target/classes`. It was built after the 2.5h timebox (see DECISIONS.md).
 
